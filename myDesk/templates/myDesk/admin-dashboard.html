@@ -1,0 +1,66 @@
+{% extends "myDesk/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+    <h2>Admin Dashboard</h2>
+    <div class="row section">
+    <h3>Manage Companies</h3>
+{% if companies %}
+    <ul class="list-group">
+    {% for company in companies %}
+        <li class="list-group-item company">
+        <div class="row row-cols-auto">
+        <div class="col company-name">Company name: <span>{{company.company_name}}</span></div>
+        <div class="col vacation-days">Vacation days: {{company.vacation_days}}</div>
+        <div class="col">
+            <button type="button" class="col btn btn-success btn-sm edit-company-btn">Edit</button>
+        </div>
+        <div class="col">
+             <form class="col delete-company-form">
+            <input type="text" hidden class="delete-company-id" value="{{company.id}}" />
+            <input type="submit" class="btn btn-danger btn-sm delete-company-btn" value="Delete">
+        </form>
+        </div>  
+        </div>
+       <!-- Edit company infos -->
+        <div class="row g-2 edit-company-view" style="display: none;">
+            <form class="edit-company-form">
+                <div class="col">
+                <div class="form-floating">
+                <input type="text" class="edit-company-name form-control" id="floatingName" value="{{company.company_name}}" />
+                <label for="floatingName">Company name</label>
+                </div>
+                </div>
+                <div class="col">
+                <div class="form-floating">
+                <input type="text" class="edit-vacation-days form-control" id="floatingVacation" value="{{company.vacation_days}}" />
+              <label for="floatingVacation">Vacation days</label>   
+              </div>
+              </div>
+                <input type="text" hidden class="company-id" value="{{company.id}}" />
+                <input type="submit" class="btn btn-sm btn-primary" value="Save" />
+            </form>
+        </div>
+
+    </li>
+    {% endfor %}
+    </ul>
+{% endif %}
+<div class="card section" style="width: 18rem;">
+<div class="card-body"><h4 class="card-title">Add a new company</h4>
+<div>
+<form action="{% url 'add_company' %}" method="post">
+        {% csrf_token %}
+        {{ company_form }}
+        <input class="btn btn-primary" type="submit" value="Add Company">
+    </form>  
+</div>
+</div>
+</div>
+</div>
+<hr>
+<div class="row section">
+    <h3>Manage Teams</h3>
+</div>
+{% endblock %}
