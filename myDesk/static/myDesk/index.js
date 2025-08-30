@@ -1,17 +1,18 @@
 //Fields and Labels must have the same index!
 const companyFields = ['company_name', 'vacation_days', 'company_id']
-const companyLabels = ['Company name', 'Vacation days', 'Company id']
+const teamFields = ['team_name', 'team_company', 'team_id']
 
 document.addEventListener('DOMContentLoaded', function () {
   console.log('Dom Loaded');
-    setSectionButtons('company', companyFields, companyLabels)
+    setSectionButtons('company', companyFields);
+    setSectionButtons('team', teamFields)
 });
 
 function setSectionButtons(section, fields, labels) {
 //EDIT BUTTON
     const edit_buttons = document.querySelectorAll(`.edit-${section}-btn`);
 edit_buttons.forEach((button, index) => {
-  button.addEventListener(`click`, () => editRecord(index, section, fields, labels));
+  button.addEventListener(`click`, () => editRecord(index, section, fields));
 });
 //DELETE BUTTON
 const delete_buttons = document.querySelectorAll(`.delete-${section}-btn`);
@@ -21,18 +22,20 @@ delete_buttons.forEach((button, index) => {
 }
 
 //EDIT
-function editRecord(index, section, fields, labels) {
+function editRecord(index, section, fields) {
   document.querySelectorAll(`.edit-${section}-view`)[index].style.display =
     'block';
   document.querySelectorAll(`.edit-${section}-btn`)[index].style.display =
     'none';   
     
     document.querySelectorAll(`.edit-${section}-form`)[index].onsubmit = (e) => {
-        e.preventDefault();
+        // e.preventDefault();
         const fieldValues = {}
         fields.forEach((field) => {
             fieldValues[`${field}`] = document.querySelectorAll(`.edit-${field}`)[index].value
         })
+
+        console.log(fieldValues)
 
     fetch(`/edit-${section}`, {
         method: 'POST',
@@ -46,14 +49,7 @@ function editRecord(index, section, fields, labels) {
         document.querySelectorAll(`.edit-${section}-btn`)[index].style.display =
             'block';
         console.log(result)
-        
-        //Display result elements except for ID
-        for (const [key, value] of Object.entries(result)) {
-            if (key != "id") {
-                labelIndex = fields.findIndex((i)=> i == key)
-                document.querySelectorAll(`div.${key}, div.edit-${key}`)[index].textContent = `${labels[labelIndex]}: ` + value;
-            } 
-        }
+        window.location.reload()
         });
     return false;
     };
@@ -61,10 +57,8 @@ function editRecord(index, section, fields, labels) {
 
 //DELETE
 function deleteRecord(index, section) {
-    // const company_id = document.querySelectorAll(`.delete-${section}_id`)[index];
-    // console.log(company_id)
     document.querySelectorAll(`.delete-${section}-form`)[index].onsubmit = (e) => {
-      e.preventDefault();
+    //   e.preventDefault();
       const fieldsValue = {}
       fieldsValue[`${section}_id`] = document.querySelectorAll(
         `.delete-${section}_id`
@@ -79,6 +73,8 @@ function deleteRecord(index, section) {
         .then((response) => response.json())
         .then((result) => {
             document.querySelectorAll(`.${section}`)[index].style.display = 'none';
+        window.location.reload();
+
         });
     };
 }

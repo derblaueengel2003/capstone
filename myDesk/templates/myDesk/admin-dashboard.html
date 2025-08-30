@@ -63,5 +63,65 @@
 <hr>
 <div class="row section">
     <h3>Manage Teams</h3>
+    {% if teams %}
+    <ul class="list-group">
+    {% for team in teams %}
+        <li class="list-group-item team">
+        <div class="row row-cols-auto">
+        <div class="col team_name">Team: <span>{{team.team_name}}</span></div>
+        <div class="col team_company">Company: {{team.team_company.company_name}}</div>
+        <div class="col">
+            <button type="button" class="col btn btn-success btn-sm edit-team-btn">Edit</button>
+        </div>
+       <!-- Delete team record -->
+        <div class="col">
+             <form class="col delete-team-form">
+            <input type="text" hidden class="delete-team_id" value="{{team.id}}" />
+            <input type="submit" class="btn btn-danger btn-sm delete-team-btn" value="Delete">
+        </form>
+        </div>  
+        </div>
+       <!-- Edit team infos -->
+        <div class="row g-2 edit-team-view" style="display: none;">
+            <form class="edit-team-form">
+                <div class="col">
+                <div class="form-floating">
+                <input type="text" class="edit-team_name form-control" id="floatingNameTeam" value="{{team.team_name}}" />
+                <label for="floatingNameTeam">Team</label>
+                </div>
+                </div>
+                <div class="col">
+                <div class="form-floating">
+                <select class="edit-team_company form-select" aria-label="Small select example">
+                    <option value="{{team.team_company.id}}">{{team.team_company.company_name}}</option>
+                    {% for company in companies %}
+                    {% if company.id != team.team_company.id%}
+                    <option value="{{company.id}}">{{company.company_name}}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+              </div>
+              </div>
+                <input type="text" hidden class="edit-team_id" value="{{team.id}}" />
+                <input type="submit" class="btn btn-sm btn-primary" value="Save" />
+            </form>
+        </div>
+
+    </li>
+    {% endfor %}
+    </ul>
+{% endif %}
+<div class="card section" style="width: 18rem;">
+<div class="card-body"><h4 class="card-title">Add a new team</h4>
+<div>
+<form action="{% url 'add_team' %}" method="post">
+        {% csrf_token %}
+        {{ team_form }}
+        <input class="btn btn-primary" type="submit" value="Add Team">
+    </form>  
 </div>
+</div>
+</div>
+</div>
+<hr>
 {% endblock %}
