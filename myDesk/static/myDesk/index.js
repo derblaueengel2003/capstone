@@ -1,63 +1,84 @@
+//Fields and Labels must have the same index!
+const companyFields = ['company_name', 'vacation_days', 'company_id']
+const companyLabels = ['Company name', 'Vacation days', 'Company id']
+
 document.addEventListener('DOMContentLoaded', function () {
   console.log('Dom Loaded');
-
-  const edit_company_buttons = document.querySelectorAll(`.edit-company-btn`);
-  edit_company_buttons.forEach((button, index) => {
-    button.addEventListener(`click`, () => edit_company(index));
-  });
-
-  const delete_company_buttons = document.querySelectorAll('.delete-company-btn');
-  delete_company_buttons.forEach((button, index) => {
-    button.addEventListener('click', () => delete_company(index))
-  })
+    setSectionButtons('company', companyFields, companyLabels)
 });
 
-function edit_company(index) {
-  document.querySelectorAll('.edit-company-view')[index].style.display = 'block';
-  document.querySelectorAll('.edit-company-btn')[index].style.display = 'none';
-
-  const company_name = document.querySelectorAll('.edit-company-name')[index];
-  const vacation_days = document.querySelectorAll('.edit-vacation-days')[index];
-  const company_id = document.querySelectorAll('.company-id')[index];
-
-  document.querySelectorAll('.edit-company-form')[index].onsubmit = (e) => {
-    e.preventDefault();
-    fetch('/edit-company', {
-      method: 'POST',
-      body: JSON.stringify({
-        company_name: company_name.value,
-        vacation_days: vacation_days.value,
-        company_id: company_id.value,
-      }),
-    })
-      .then((response) => response.json())
-      .then((result) => {
-        document.querySelectorAll('.edit-company-view')[index].style.display = 'none';
-        document.querySelectorAll('.edit-company-btn')[index].style.display = 'block';
-       
-        document.querySelectorAll('div.company-name, div.edit-company-name')[index].textContent = "Company name: "+
-          result.company_name;
-        document.querySelectorAll('div.vacation-days, div.edit-vacation-days')[index].textContent = "Vacation days: "+
-          result.vacation_days;
-      });
-    return false;
-  };
+function setSectionButtons(section, fields, labels) {
+//EDIT BUTTON
+    const edit_buttons = document.querySelectorAll(`.edit-${section}-btn`);
+edit_buttons.forEach((button, index) => {
+  button.addEventListener(`click`, () => editRecord(index, section, fields, labels));
+});
+//DELETE BUTTON
+const delete_buttons = document.querySelectorAll(`.delete-${section}-btn`);
+delete_buttons.forEach((button, index) => {
+  button.addEventListener('click', () => deleteRecord(index, section))
+})
 }
 
-function delete_company(index) {
-    const company_id = document.querySelectorAll('.delete-company-id')[index];
-    console.log(company_id)
-    document.querySelectorAll('.delete-company-form')[index].onsubmit = (e) => {
-      e.preventDefault();
-      fetch(`/delete-company`, {
+//EDIT
+function editRecord(index, section, fields, labels) {
+  document.querySelectorAll(`.edit-${section}-view`)[index].style.display =
+    'block';
+  document.querySelectorAll(`.edit-${section}-btn`)[index].style.display =
+    'none';   
+    
+    document.querySelectorAll(`.edit-${section}-form`)[index].onsubmit = (e) => {
+        e.preventDefault();
+        const fieldValues = {}
+        fields.forEach((field) => {
+            fieldValues[`${field}`] = document.querySelectorAll(`.edit-${field}`)[index].value
+        })
+
+    fetch(`/edit-${section}`, {
         method: 'POST',
-        body: JSON.stringify({
-          company_id: company_id.value,
-        }),
+        body: JSON.stringify(fieldValues),
+    })
+        .then((response) => response.json())
+        .then((result) => {
+        document.querySelectorAll(`.edit-${section}-view`)[
+            index
+        ].style.display = 'none';
+        document.querySelectorAll(`.edit-${section}-btn`)[index].style.display =
+            'block';
+        console.log(result)
+        
+        //Display result elements except for ID
+        for (const [key, value] of Object.entries(result)) {
+            if (key != "id") {
+                labelIndex = fields.findIndex((i)=> i == key)
+                document.querySelectorAll(`div.${key}, div.edit-${key}`)[index].textContent = `${labels[labelIndex]}: ` + value;
+            } 
+        }
+        });
+    return false;
+    };
+}
+
+//DELETE
+function deleteRecord(index, section) {
+    // const company_id = document.querySelectorAll(`.delete-${section}_id`)[index];
+    // console.log(company_id)
+    document.querySelectorAll(`.delete-${section}-form`)[index].onsubmit = (e) => {
+      e.preventDefault();
+      const fieldsValue = {}
+      fieldsValue[`${section}_id`] = document.querySelectorAll(
+        `.delete-${section}_id`
+      )[index].value;
+      
+      console.log(fieldsValue)
+
+      fetch(`/delete-${section}`, {
+        method: 'POST',
+        body: JSON.stringify(fieldsValue),
       })
         .then((response) => response.json())
         .then((result) => {
-            document.querySelectorAll('.company')[index].style.display = 'none';
+            document.querySelectorAll(`.${section}`)[index].style.display = 'none';
         });
     };
 }

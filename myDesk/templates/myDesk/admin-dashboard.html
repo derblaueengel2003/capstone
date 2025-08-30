@@ -11,14 +11,15 @@
     {% for company in companies %}
         <li class="list-group-item company">
         <div class="row row-cols-auto">
-        <div class="col company-name">Company name: <span>{{company.company_name}}</span></div>
-        <div class="col vacation-days">Vacation days: {{company.vacation_days}}</div>
+        <div class="col company_name">Company name: <span>{{company.company_name}}</span></div>
+        <div class="col vacation_days">Vacation days: {{company.vacation_days}}</div>
         <div class="col">
             <button type="button" class="col btn btn-success btn-sm edit-company-btn">Edit</button>
         </div>
+       <!-- Delete company record -->
         <div class="col">
              <form class="col delete-company-form">
-            <input type="text" hidden class="delete-company-id" value="{{company.id}}" />
+            <input type="text" hidden class="delete-company_id" value="{{company.id}}" />
             <input type="submit" class="btn btn-danger btn-sm delete-company-btn" value="Delete">
         </form>
         </div>  
@@ -28,17 +29,17 @@
             <form class="edit-company-form">
                 <div class="col">
                 <div class="form-floating">
-                <input type="text" class="edit-company-name form-control" id="floatingName" value="{{company.company_name}}" />
+                <input type="text" class="edit-company_name form-control" id="floatingName" value="{{company.company_name}}" />
                 <label for="floatingName">Company name</label>
                 </div>
                 </div>
                 <div class="col">
                 <div class="form-floating">
-                <input type="text" class="edit-vacation-days form-control" id="floatingVacation" value="{{company.vacation_days}}" />
+                <input type="text" class="edit-vacation_days form-control" id="floatingVacation" value="{{company.vacation_days}}" />
               <label for="floatingVacation">Vacation days</label>   
               </div>
               </div>
-                <input type="text" hidden class="company-id" value="{{company.id}}" />
+                <input type="text" hidden class="edit-company_id" value="{{company.id}}" />
                 <input type="submit" class="btn btn-sm btn-primary" value="Save" />
             </form>
         </div>
