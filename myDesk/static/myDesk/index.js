@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setSectionButtons('team', teamFields)
 });
 
-function setSectionButtons(section, fields, labels) {
+function setSectionButtons(section, fields) {
 //EDIT BUTTON
     const edit_buttons = document.querySelectorAll(`.edit-${section}-btn`);
 edit_buttons.forEach((button, index) => {

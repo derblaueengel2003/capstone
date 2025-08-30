@@ -7,27 +7,31 @@ from django import forms
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.http import JsonResponse
-from django.forms import ModelChoiceField
+from django.forms import ModelChoiceField, CharField
 
 
+class CompanyForm(forms.ModelForm):
+    class Meta:
+        model = Company
+        fields = ['company_name', 'vacation_days', 'id']
+        widgets = {
+            "company_name": forms.TextInput(attrs={'class': 'form-control'}),
+            "vacation_days": forms.TextInput(attrs={'type': 'number','class': 'form-control'}),
+        }
 
-class CompanyForm(forms.Form):
-    company_name = forms.CharField(max_length=128)
-    vacation_days = forms.IntegerField()
-
-class TeamForm(forms.ModelForm):
-    
+class TeamForm(forms.ModelForm): 
     class Meta:
         model = Team
         fields = ["team_name", "team_company", "id"]
-    
+        widgets = {
+            "team_name": forms.TextInput(attrs={'class': 'form-control'}),
+        }
     class MyModelChoiceField(ModelChoiceField):
         def label_from_instance(self, obj):
-            print(obj)
             return obj.company_name
     
-    team_company = MyModelChoiceField(queryset=Company.objects.all(), required=True, empty_label=None)
-
+    team_company = MyModelChoiceField(queryset=Company.objects.all(), required=True, empty_label=None, widget=forms.Select(attrs={'class': 'form-select'}))
+    
 def index(request):
     return render(request, "myDesk/index.html", {})
 

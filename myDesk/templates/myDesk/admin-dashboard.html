@@ -35,7 +35,7 @@
                 </div>
                 <div class="col">
                 <div class="form-floating">
-                <input type="text" class="edit-vacation_days form-control" id="floatingVacation" value="{{company.vacation_days}}" />
+                <input type="number" class="edit-vacation_days form-control" id="floatingVacation" value="{{company.vacation_days}}" />
               <label for="floatingVacation">Vacation days</label>   
               </div>
               </div>
@@ -51,7 +51,7 @@
 <div class="card section" style="width: 18rem;">
 <div class="card-body"><h4 class="card-title">Add a new company</h4>
 <div>
-<form action="{% url 'add_company' %}" method="post">
+<form action="{% url 'add_company' %}" method="post" class="form-label">
         {% csrf_token %}
         {{ company_form }}
         <input class="btn btn-primary" type="submit" value="Add Company">
