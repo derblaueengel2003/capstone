@@ -2,7 +2,17 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from django import forms
 
+
+class SignUpForm(UserCreationForm):
+    first_name = forms.CharField(max_length=50) # Required
+    last_name = forms.CharField(max_length=50) # Required
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name", "email", "username", "password1", "password2")
+        
 def login_user(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -27,7 +37,7 @@ def logout_user(request):
 
 def register_user(request):
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        form = SignUpForm(request.POST)
         if form.is_valid():
             form.save()
             username = form.cleaned_data['username']
@@ -38,7 +48,7 @@ def register_user(request):
 
             return redirect('index')
     else:
-        form = UserCreationForm()
+        form = SignUpForm()
 
 
     return render(request, "authenticate/register_user.html", {

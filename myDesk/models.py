@@ -1,48 +1,61 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 class Company(models.Model):
     company_name = models.CharField(max_length=128)
-    vacation_days = models.IntegerField()  
 
     def serialize(self):
         return {
             "id": self.id,
             "company_name": self.company_name,
-            "vacation_days": self.vacation_days,
             }  
 
 class Team(models.Model):
     team_name = models.CharField(max_length=64)
-    team_company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="teams")
-
+    
+    def __str__(self):
+        return self.team_name
+    
     def serialize(self):
         return {
             "id": self.id,
             "team_name": self.team_name,
-            "team_company": self.team_company.company_name,
             }  
 
-class Employee(models.Model):
-    ROLES = {'admin': 'Admin', 'manager': 'Manager', 'employee': 'Employee'}
-    employee = models.OneToOneField(User, on_delete=models.CASCADE)
-    employee_firstname = models.CharField(max_length=128)
-    employee_lastname = models.CharField(max_length=128)
-    employee_team = models.ForeignKey(Team, on_delete=models.DO_NOTHING, related_name="team_members")
-    employee_role = models.CharField(choices=ROLES)
-    employement_date = models.DateField()
+class Request(models.Model):
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+class Profile(models.Model):
+    ROLES = {'Admin': 'Admin', 'Manager': 'Manager', 'Employee': 'Employee'}
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.DO_NOTHING, related_name="team_members", null=True, blank=True)
+    role = models.CharField(choices=ROLES, null=True, blank=True)
+    employement_date = models.DateField(null=True, blank=True)
+    vacation_days = models.IntegerField(null=True, blank=True)  
+    vacation_request = models.ForeignKey(Request, on_delete=models.DO_NOTHING, related_name='vacation_requests',null=True, blank=True)
     
     def __str__(self):
-        return self.employee.username
+        return self.user.username
     
     def serialize(self):
         return {
             "id": self.id,
-            "employee": self.employee,
-            "employee_firstname": self.employee_firstname,
-            "employee_lastname": self.employee_lastname,
-            "employee_team": self.employee_team,
-            "employee_role": self.employee_role,
+            "user": self.user,
+            "team": self.team,
+            "role": self.role,
             "employement_date": self.employement_date,
+            "vacation_days": self.vacation_days,
+            "vacation_request": self.vacation_request,
             }  
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()

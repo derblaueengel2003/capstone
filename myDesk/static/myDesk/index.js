@@ -1,16 +1,18 @@
 //Fields and Labels must have the same index!
-const companyFields = ['company_name', 'vacation_days', 'company_id']
-const teamFields = ['team_name', 'team_company', 'team_id']
+const companyFields = ['company_name', 'company_id']
+const teamFields = ['team_name', 'team_id']
+// const employeeFields = ['firstname', 'lastname', 'team', 'role', 'employement_date', 'vacation_days', 'employee_id']
 
 document.addEventListener('DOMContentLoaded', function () {
   console.log('Dom Loaded');
     setSectionButtons('company', companyFields);
-    setSectionButtons('team', teamFields)
+    setSectionButtons('team', teamFields);
+    // setSectionButtons('employee', employeeFields);
 });
 
 function setSectionButtons(section, fields) {
 //EDIT BUTTON
-    const edit_buttons = document.querySelectorAll(`.edit-${section}-btn`);
+const edit_buttons = document.querySelectorAll(`.edit-${section}-btn`);
 edit_buttons.forEach((button, index) => {
   button.addEventListener(`click`, () => editRecord(index, section, fields));
 });
@@ -23,6 +25,7 @@ delete_buttons.forEach((button, index) => {
 
 //EDIT
 function editRecord(index, section, fields) {
+    console.log(index, section, fields)
   document.querySelectorAll(`.edit-${section}-view`)[index].style.display =
     'block';
   document.querySelectorAll(`.edit-${section}-btn`)[index].style.display =
@@ -30,6 +33,7 @@ function editRecord(index, section, fields) {
     
     document.querySelectorAll(`.edit-${section}-form`)[index].onsubmit = (e) => {
         // e.preventDefault();
+        console.log(e)
         const fieldValues = {}
         fields.forEach((field) => {
             fieldValues[`${field}`] = document.querySelectorAll(`.edit-${field}`)[index].value
