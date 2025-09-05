@@ -1,14 +1,13 @@
-//Fields and Labels must have the same index!
 const companyFields = ['company_name', 'company_id']
 const teamFields = ['team_name', 'team_id']
-// const employeeFields = ['firstname', 'lastname', 'team', 'role', 'employement_date', 'vacation_days', 'employee_id']
-
-document.addEventListener('DOMContentLoaded', function () {
-  console.log('Dom Loaded');
-    setSectionButtons('company', companyFields);
-    setSectionButtons('team', teamFields);
-    // setSectionButtons('employee', employeeFields);
-});
+const employeeFields = [
+  'user',
+  'team',
+  'role',
+  'employement_date',
+  'vacation_days',
+  'employee_id',
+];
 
 function setSectionButtons(section, fields) {
 //EDIT BUTTON
@@ -22,6 +21,14 @@ delete_buttons.forEach((button, index) => {
   button.addEventListener('click', () => deleteRecord(index, section))
 })
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+  console.log('Dom Loaded');
+    setSectionButtons('company', companyFields);
+    setSectionButtons('team', teamFields);
+    setSectionButtons('employee', employeeFields);
+});
+
 
 //EDIT
 function editRecord(index, section, fields) {
@@ -74,8 +81,8 @@ function deleteRecord(index, section) {
         method: 'POST',
         body: JSON.stringify(fieldsValue),
       })
-        .then((response) => response.json())
-        .then((result) => {
+        // .then((response) => response.json())
+        .then((response) => {
             document.querySelectorAll(`.${section}`)[index].style.display = 'none';
         window.location.reload();
 

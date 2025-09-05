@@ -21,7 +21,7 @@
 
 <div class="card section" style="width: 18rem;">
 <div class="card-body"><h4 class="card-title">Edit your Informations:</h4><div>
-<form action="{% url 'edit_profile' %}" method="post">
+<form action="{% url 'edit_user' %}" method="post">
         {% csrf_token %}
         {{ user_form }}
         <!-- {{ profile_form }} -->

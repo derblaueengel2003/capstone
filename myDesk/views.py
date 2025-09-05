@@ -42,7 +42,7 @@ class ProfileForm(forms.ModelForm):
 def index(request):
     return render(request, "myDesk/index.html")
 
-def edit_profile(request):
+def edit_user(request):
     if request.method == 'POST':
         user_form = UserForm(request.POST, instance=request.user)
         # profile_form = ProfileForm(request.POST, instance=request.user.profile)
@@ -165,8 +165,10 @@ def edit_employee(request):
 @csrf_exempt
 def delete_employee(request):
     data = json.loads(request.body)
-    employee_to_delete = Profile.objects.get(pk=data['employee_id'])
-    employee_to_delete.delete()
+    console.log(request.body)
+    employee_to_delete = User.objects.get(pk=data['employee_id'])
+    employee_to_delete.is_active = False
+    employee_to_delete.save()
     return JsonResponse(employee_to_delete.serialize())
 
 
