@@ -24,31 +24,28 @@ class Team(models.Model):
             "team_name": self.team_name,
             }  
 
-class Request(models.Model):
-    start_date = models.DateField()
-    end_date = models.DateField()
-
 class Profile(models.Model):
     ROLES = {'Admin': 'Admin', 'Manager': 'Manager', 'Employee': 'Employee'}
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    team = models.ForeignKey(Team, on_delete=models.DO_NOTHING, related_name="team_members", null=True, blank=True)
-    role = models.CharField(choices=ROLES, null=True, blank=True)
-    employement_date = models.DateField(null=True, blank=True)
-    vacation_days = models.IntegerField(null=True, blank=True)  
-    vacation_request = models.ForeignKey(Request, on_delete=models.DO_NOTHING, related_name='vacation_requests',null=True, blank=True)
+    team = models.ForeignKey(Team, on_delete=models.SET_NULL, related_name="team_members", null=True, blank=True)
+    role = models.CharField(choices=ROLES, default='Employee')
+    employment_date = models.DateField(null=True, blank=True)
+    vacation_days = models.IntegerField(default=0)  
     
     def __str__(self):
         return self.user.username
     
     def serialize(self):
+        team = {}
+        if self.team:
+            team['id'] = self.team.id
+            team['team_name'] = self.team.team_name
         return {
             "id": self.id,
-            "user": self.user,
-            "team": self.team,
+            "team": team,
             "role": self.role,
-            "employement_date": self.employement_date,
+            "employment_date": self.employment_date,
             "vacation_days": self.vacation_days,
-            "vacation_request": self.vacation_request,
             }  
 
 @receiver(post_save, sender=User)
@@ -59,3 +56,9 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.profile.save()
+
+class Request(models.Model):
+    start_date = models.DateField()
+    end_date = models.DateField()
+    request_user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='vacation_requests')
+    approved = models.BooleanField(default=False)

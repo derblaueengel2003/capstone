@@ -108,9 +108,13 @@
                 <li class="list-group-item employee">
                 <div class="row row-cols-auto">
                 <div class="col firstname"><span>{{employee.user.get_full_name}}</span></div>
-                <div class="col team">Team: <span>{{employee.team}}</span></div>
+                {% if not employee.team.id %}
+                    <div class="col team">Team: Not assigned</span></div>
+                  {% else %}
+                    <div class="col team">Team: <span>{{employee.team.team_name}}</span></div>
+                  {% endif %}
                 <div class="col role">Role: <span>{{employee.role}}</span></div>
-                <div class="col employement_date">Employement Date: <span>{{employee.employement_date}}</span></div>
+                <div class="col employment_date">Employment Date: <span>{{employee.employment_date}}</span></div>
                 <div class="col vacation_days">Vacation Days: <span>{{employee.vacation_days}}</span></div>
                 <div class="col">
                     <button type="button" class="col btn btn-success btn-sm edit-employee-btn">Edit</button>
@@ -125,15 +129,46 @@
             </div> 
             <!-- Edit team infos -->
             <div class="row g-2 edit-employee-view" style="display: none;">
-                <form class="edit-employee-form">
+                <form class="edit-employee-form" id="floatingSelectTeam">
                     <div class="col">
                         <div class="form-floating">
-                            <input type="text" class="edit-firstname form-control" id="floatingFirstname" value="{{employee.user.first_name}}" />
-                            <label for="floatingFirstname">Firstname</label>
+                        <select class="form-select edit-team">
+                            {% if not employee.team.id %}
+                            <option value="" selected>--Team not assigned--</option>
+                            {% else %}
+                            <option value="remove">--Remove from Team--</option>
+                            {% endif %}
+                                {% for team in teams %}
+                                {% if team.id == employee.team.id %}
+                                <option value= "{{ team.id }}" selected>{{ team.team_name }}</option>
+                                {% else %}
+                                <option value= "{{ team.id }}">{{ team.team_name }}</option>
+                                {% endif %}
+                                {% endfor %}
+                        </select>
+                        <label for="floatingSelectTeam">Team</label>
+
                         </div>
                         <div class="form-floating">
-                            <input type="text" class="edit-lastname form-control" id="floatingLastname" value="{{employee.user.last_name}}" />
-                            <label for="floatingLastname">Lastname</label>
+                        <select class="form-select edit-role" id="floatingSelectRole">
+            
+                                {% for role in employee.ROLES.keys %}
+                                {% if role == employee.role %}
+                                <option value= "{{ role }}" selected>{{ role }}</option>
+                                {% else %}
+                                <option value= "{{ role }}">{{ role }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                            <label for="floatingSelectRole">Role</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="date" class="edit-employment_date form-control" id="floatingemploymentDate" value="{{employee.employment_date|date:'Y-m-d'}}" />
+                            <label for="floatingemploymentDate">Employment Date</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="number" class="edit-vacation_days form-control" id="floatingVacationDays" value="{{employee.vacation_days}}" />
+                            <label for="floatingVacationDays">Vacation Days</label>
                         </div>
                     </div>
                         <input type="text" hidden class="edit-employee_id" value="{{employee.id}}" />

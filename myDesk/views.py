@@ -10,6 +10,7 @@ import json
 from django.http import JsonResponse
 from django.forms import ModelChoiceField, CharField
 from django.contrib import messages
+from datetime import datetime
 
 
 
@@ -37,7 +38,7 @@ class UserForm(forms.ModelForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ["user", "team", "role", "employement_date", "vacation_days", "id"]
+        fields = ["user", "team", "role", "employment_date", "vacation_days", "id"]
 
 def index(request):
     return render(request, "myDesk/index.html")
@@ -145,7 +146,7 @@ def employee(request):
             new_employee = Profile(
                 team=form.cleaned_data["team"],
                 role=form.cleaned_data["role"],
-                employement_date=form.cleaned_data["employement_date"],
+                employment_date=datetime.strptime(form.cleaned_data["employment_date"], "%Y-%m-%d"),
                 vacation_days=form.cleaned_data["vacation_days"],  
                 )
             new_employee.save()
@@ -155,8 +156,17 @@ def employee(request):
 @csrf_exempt
 def edit_employee(request):
     data = json.loads(request.body)
+    print(request.body)
     employee = Profile.objects.get(pk=data['employee_id'])
 
+    if data['team'] and data['team'] != 'remove':
+        employee.team = Team.objects.get(pk=data['team'])
+    elif data['team'] == 'remove':
+        employee.team = None
+    employee.role = data["role"]
+    if data['employment_date']:
+        employee.employment_date = data["employment_date"]
+    employee.vacation_days = data["vacation_days"]
     employee.save()
     return JsonResponse(employee.serialize())
 
@@ -165,7 +175,6 @@ def edit_employee(request):
 @csrf_exempt
 def delete_employee(request):
     data = json.loads(request.body)
-    console.log(request.body)
     employee_to_delete = User.objects.get(pk=data['employee_id'])
     employee_to_delete.is_active = False
     employee_to_delete.save()

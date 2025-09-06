@@ -1,13 +1,20 @@
 const companyFields = ['company_name', 'company_id']
 const teamFields = ['team_name', 'team_id']
 const employeeFields = [
-  'user',
   'team',
   'role',
-  'employement_date',
+  'employment_date',
   'vacation_days',
   'employee_id',
 ];
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  console.log('Dom Loaded');
+  setSectionButtons('company', companyFields);
+  setSectionButtons('team', teamFields);
+  setSectionButtons('employee', employeeFields);
+});
 
 function setSectionButtons(section, fields) {
 //EDIT BUTTON
@@ -22,17 +29,9 @@ delete_buttons.forEach((button, index) => {
 })
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  console.log('Dom Loaded');
-    setSectionButtons('company', companyFields);
-    setSectionButtons('team', teamFields);
-    setSectionButtons('employee', employeeFields);
-});
-
-
 //EDIT
 function editRecord(index, section, fields) {
-    console.log(index, section, fields)
+  console.log(index, section, fields)
   document.querySelectorAll(`.edit-${section}-view`)[index].style.display =
     'block';
   document.querySelectorAll(`.edit-${section}-btn`)[index].style.display =
@@ -40,7 +39,7 @@ function editRecord(index, section, fields) {
     
     document.querySelectorAll(`.edit-${section}-form`)[index].onsubmit = (e) => {
         // e.preventDefault();
-        console.log(e)
+        console.log(fields)
         const fieldValues = {}
         fields.forEach((field) => {
             fieldValues[`${field}`] = document.querySelectorAll(`.edit-${field}`)[index].value
