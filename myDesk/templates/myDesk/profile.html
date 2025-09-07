@@ -6,16 +6,16 @@
 <h2>{{ user.get_full_name }}</h2>
 <div class="row section">
     <h3>Your Infos</h3>
-    <ul class="list-group">
-        <li class="list-group-item profile">
-        <div class="row row-cols-auto">
-        <div class="col">Username: {{ user.username }}</div>
-        <div class="col">Team: {{ user.profile.team }}</div>
-        <div class="col">Role: {{ user.profile.role }}</div>
-        <div class="col">Employment date: {{ user.profile.employment_date }}</div>
-        <div class="col">Vacation days: {{ user.profile.vacation_days }}</div>
-        </li> 
-    </ul>
+    <div class="card text-bg-light" style="width: auto">
+        <div class="card-body profile">
+        
+        <div class="card-title">{{ user.username }}</div>
+        <div class="">Team: {{ user.profile.team }}</div>
+        <div class="">Role: {{ user.profile.role }}</div>
+        <div class="">Employment date: {{ user.profile.employment_date }}</div>
+        <div class="">Vacation days: {{ user.profile.vacation_days }}</div>
+        
+    </div>
 </div>
 <hr>
 
