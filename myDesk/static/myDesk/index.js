@@ -37,15 +37,11 @@ function editRecord(index, section, fields) {
   document.querySelectorAll(`.edit-${section}-btn`)[index].style.display =
     'none';   
     
-    document.querySelectorAll(`.edit-${section}-form`)[index].onsubmit = (e) => {
-        // e.preventDefault();
-        console.log(fields)
+    document.querySelectorAll(`.edit-${section}-form`)[index].onsubmit = () => {
         const fieldValues = {}
         fields.forEach((field) => {
             fieldValues[`${field}`] = document.querySelectorAll(`.edit-${field}`)[index].value
         })
-
-        console.log(fieldValues)
 
     fetch(`/edit-${section}`, {
         method: 'POST',
@@ -58,7 +54,7 @@ function editRecord(index, section, fields) {
         ].style.display = 'none';
         document.querySelectorAll(`.edit-${section}-btn`)[index].style.display =
             'block';
-        console.log(result)
+        
         window.location.reload()
         });
     return false;
@@ -67,8 +63,7 @@ function editRecord(index, section, fields) {
 
 //DELETE
 function deleteRecord(index, section) {
-    document.querySelectorAll(`.delete-${section}-form`)[index].onsubmit = (e) => {
-    //   e.preventDefault();
+    document.querySelectorAll(`.delete-${section}-form`)[index].onsubmit = () => {
       const fieldsValue = {}
       fieldsValue[`${section}_id`] = document.querySelectorAll(
         `.delete-${section}_id`
@@ -80,7 +75,6 @@ function deleteRecord(index, section) {
         method: 'POST',
         body: JSON.stringify(fieldsValue),
       })
-        // .then((response) => response.json())
         .then((response) => {
             document.querySelectorAll(`.${section}`)[index].style.display = 'none';
         window.location.reload();

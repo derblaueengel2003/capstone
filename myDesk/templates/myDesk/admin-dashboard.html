@@ -4,25 +4,25 @@
 {% block body %}
 
     <h2>Admin Dashboard</h2>
-    <div class="row section">
-    <h3>Manage Company</h3>
+    <div class="row section" style="width: 18rem;">
+    <h3>Company</h3>
 {% if companies %}
     <ul class="list-group">
     {% for company in companies %}
         <li class="list-group-item company">
-        <div class="row row-cols-auto">
-        <div class="col company_name">Company name: <span>{{company.company_name}}</span></div>
+        <div class="row">
+        <div class="col company_name"><span>{{company.company_name}}</span></div>
         <div class="col">
             <button type="button" class="col btn btn-success btn-sm edit-company-btn">Edit</button>
         </div>
        <!-- Delete company record -->
-        <div class="col">
+        <!-- <div class="col">
              <form class="col delete-company-form">
             <input type="text" hidden class="delete-company_id" value="{{company.id}}" />
             <input type="submit" class="btn btn-danger btn-sm delete-company-btn" value="Delete">
         </form>
         </div>  
-        </div>
+        </div> -->
        <!-- Edit company infos -->
         <div class="row g-2 edit-company-view" style="display: none;">
             <form class="edit-company-form">
@@ -40,49 +40,50 @@
         </li>
     {% endfor %}
     </ul>
-
-
     </div>
-
     <hr>
 <!-- MANAGE TEAM SECTION -->
     <div class="row section">
-        <h3>Manage Teams</h3>
-        {% if teams %}
-            <ul class="list-group">
-            {% for team in teams %}
-                <li class="list-group-item team">
-                <div class="row row-cols-auto">
-                <div class="col team_name">Team: <span>{{team.team_name}}</span></div>
-                <div class="col">
-                    <button type="button" class="col btn btn-success btn-sm edit-team-btn">Edit</button>
-                </div>
-                <!-- Delete team record -->
-                <div class="col">
-                    <form class="col delete-team-form">
-                        <input type="text" hidden class="delete-team_id" value="{{team.id}}" />
-                        <input type="submit" class="btn btn-danger btn-sm delete-team-btn" value="Delete">
-                    </form>
-                </div>  
-            </div>
-            <!-- Edit team infos -->
-            <div class="row g-2 edit-team-view" style="display: none;">
-                <form class="edit-team-form">
+        <h3>Teams</h3>
+        {% if teams %} 
+        {% for team in teams %}
+        <div class="col section">  
+            <div class="card team" style="width: 18rem;">
+                <div class="card-body">
+                <h4 class="card-title team_name"><span>{{team.team_name}}</span></h4>    
+                <div class="row">
                     <div class="col">
-                        <div class="form-floating">
-                            <input type="text" class="edit-team_name form-control" id="floatingNameTeam" value="{{team.team_name}}" />
-                            <label for="floatingNameTeam">Team</label>
-                        </div>
+                        <button type="button" class="btn btn-success btn-sm edit-team-btn">Edit</button> 
+                    </div>            
+                <!-- Delete team record -->
+                    <div class="col">
+                        <form class="delete-team-form">
+                            <input type="text" hidden class="delete-team_id" value="{{team.id}}" />
+                            <input type="submit" class="btn btn-danger btn-sm delete-team-btn" value="Delete">
+                        </form>  
+                    </div> 
+                </div>         
+            </div>
+                    <!-- Edit team infos -->
+                    <div class="edit-team-view" style="display: none;">
+                        <form class="edit-team-form">
+                            <div class="card-body">
+                                <div class="form-floating">
+                                    <input type="text" class="edit-team_name form-control" id="floatingNameTeam" value="{{team.team_name}}" />
+                                    <label for="floatingNameTeam">Team</label>
+                                </div>
+                                <input type="text" hidden class="edit-team_id" value="{{team.id}}" />
+                                <input type="submit" class="btn btn-sm btn-primary" value="Save" />
+                            </div>
+                        </form>
                     </div>
-                        <input type="text" hidden class="edit-team_id" value="{{team.id}}" />
-                        <input type="submit" class="btn btn-sm btn-primary" value="Save" />
-                    </form>
-                </div>
-
-            </li>
+                    
+                </div>   
+            </div>
             {% endfor %}
-            </ul>
         {% endif %}
+    </div>
+
     <div class="card section" style="width: 18rem;">
     <div class="card-body"><h4 class="card-title">Add a new team</h4>
     <div>
@@ -94,43 +95,46 @@
     </div>
     </div>
     </div>
-    </div>
     <hr>
 <!-- END MANAGE TEAM SECTION -->
 
 
 <!-- MANAGE EMPLOYEE SECTION -->
+ <!-- Active users -->
      <div class="row section">
-        <h3>Manage Employees</h3>
+        <h3>Employees</h3>
         {% if employees %}
-            <ul class="list-group">
-            {% for employee in employees %}
-                <li class="list-group-item employee">
-                <div class="row row-cols-auto">
-                <div class="col firstname"><span>{{employee.user.get_full_name}}</span></div>
+        {% for employee in employees %}
+        {% if employee.user.is_active %}
+        <div class="col section">
+        <div class="card employee" style="width: 18rem;">
+            <div class="card-body">
+                <div class="card-title firstname"><span>{{employee.user.get_full_name}}</span></div>
                 {% if not employee.team.id %}
-                    <div class="col team">Team: Not assigned</span></div>
+                    <div class="team">Team: Not assigned</span></div>
                   {% else %}
-                    <div class="col team">Team: <span>{{employee.team.team_name}}</span></div>
+                    <div class="team">Team: <span>{{employee.team.team_name}}</span></div>
                   {% endif %}
-                <div class="col role">Role: <span>{{employee.role}}</span></div>
-                <div class="col employment_date">Employment Date: <span>{{employee.employment_date}}</span></div>
-                <div class="col vacation_days">Vacation Days: <span>{{employee.vacation_days}}</span></div>
+                <div class="role">Role: <span>{{employee.role}}</span></div>
+                <div class="employment_date">Employment Date: <span>{{employee.employment_date}}</span></div>
+                <div class="vacation_days">Vacation Days: <span>{{employee.vacation_days}}</span></div>
+                <div class="row">
                 <div class="col">
                     <button type="button" class="col btn btn-success btn-sm edit-employee-btn">Edit</button>
                 </div>
-                <!-- Delete employee record -->
+                <!-- Toggle is_active property of this user -->
                 <div class="col">
                     <form class="col delete-employee-form">
                         <input type="text" hidden class="delete-employee_id" value="{{employee.user.id}}" />
-                        <input type="submit" class="btn btn-danger btn-sm delete-employee-btn" value="Delete">
+                        <input type="submit" class="btn btn-danger btn-sm delete-employee-btn" value="Deactivate">
                     </form>
                 </div>  
+                </div>  
             </div> 
-            <!-- Edit team infos -->
+            <!-- Edit employee infos -->
             <div class="row g-2 edit-employee-view" style="display: none;">
                 <form class="edit-employee-form" id="floatingSelectTeam">
-                    <div class="col">
+                    <div class="card-body">
                         <div class="form-floating">
                         <select class="form-select edit-team">
                             {% if not employee.team.id %}
@@ -147,8 +151,9 @@
                                 {% endfor %}
                         </select>
                         <label for="floatingSelectTeam">Team</label>
-
                         </div>
+                    <!-- End Edit team infos -->
+
                         <div class="form-floating">
                         <select class="form-select edit-role" id="floatingSelectRole">
             
@@ -170,27 +175,43 @@
                             <input type="number" class="edit-vacation_days form-control" id="floatingVacationDays" value="{{employee.vacation_days}}" />
                             <label for="floatingVacationDays">Vacation Days</label>
                         </div>
-                    </div>
                         <input type="text" hidden class="edit-employee_id" value="{{employee.id}}" />
                         <input type="submit" class="btn btn-sm btn-primary" value="Save" />
+                    </div>
                     </form>
                 </div>
-
+            </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    <!-- <hr> -->
+    <!-- Inactive employees -->
+     <div class="row section" style="width: 18rem;">
+        <h4>Inactive Employees</h4>
+        {% if employees %}
+            <ul class="list-group">
+            {% for employee in employees %}
+                {% if not employee.user.is_active %}
+                <li class="list-group-item employee">
+                <div class="row">
+                <div class="col firstname"><span>{{employee.user.get_full_name}}</span></div>
+                <!-- Toggle is_active property of this user -->
+                <div class="col">
+                    <form class="col delete-employee-form">
+                        <input type="text" hidden class="delete-employee_id" value="{{employee.user.id}}" />
+                        <input type="submit" class="btn btn-secondary btn-sm delete-employee-btn" value="Activate">
+                    </form>
+                </div>  
+                </div> 
             </li>
+            {% endif %}
             {% endfor %}
             </ul>
+
+
         {% endif %}
-    <!-- <div class="card section" style="width: 18rem;">
-    <div class="card-body"><h4 class="card-title">Add a new employee</h4>
-    <div>
-    <form action="{% url 'add_employee' %}" method="post">
-            {% csrf_token %}
-            {{ profile_form }}
-            <input class="btn btn-primary" type="submit" value="Add Employee">
-        </form>  
-    </div>
-    </div>
-    </div> -->
     </div>
     <hr>
 <!-- END MANAGE EMPLOYEE SECTION -->

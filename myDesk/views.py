@@ -67,7 +67,8 @@ def edit_user(request):
 def admin_dashboard(request):
     companies = Company.objects.all().order_by('company_name').values()
     teams = Team.objects.all().order_by('team_name').values()
-    employees = Profile.objects.all()
+    employees = Profile.objects.all().order_by('role')
+
 
     #If the user has is_staff permission then he can access the admin
     #dashboard. Otherwise he will be redirect to the homepage
@@ -173,11 +174,11 @@ def edit_employee(request):
 
 #da rivedere, meglio disattivare che cancellare
 @csrf_exempt
-def delete_employee(request):
+def toggle_employee_status(request):
     data = json.loads(request.body)
-    employee_to_delete = User.objects.get(pk=data['employee_id'])
-    employee_to_delete.is_active = False
-    employee_to_delete.save()
+    employee_to_delete = Profile.objects.get(pk=data['employee_id'])
+    employee_to_delete.user.is_active = not employee_to_delete.user.is_active
+    employee_to_delete.user.save()
     return JsonResponse(employee_to_delete.serialize())
 
 
