@@ -1,15 +1,14 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from .models import Company, Team, Profile, Request
 from django.contrib.auth.models import User
 from django import forms
 from django.views.decorators.csrf import csrf_exempt
-import json
-from django.forms import ModelChoiceField, CharField
+import json, datetime
 from django.contrib import messages
-from datetime import datetime
+from django.core.exceptions import ValidationError
 
 
 
@@ -43,6 +42,26 @@ class RequestForm(forms.ModelForm):
     class Meta:
         model = Request
         fields = ['start_date', 'end_date']
+        widgets = {
+            "start_date": forms.TextInput(attrs={'class': 'form-control', 'type': 'date'}),
+            "end_date": forms.TextInput(attrs={'class': 'form-control', 'type': 'date'}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get('start_date')
+        end_date = cleaned_data.get('end_date')
+        if not start_date or not end_date:
+            raise ValidationError("Start date and end date are mandatory.")
+        today = datetime.date.today()
+        # start_date cannot be in the past
+        if start_date < today:
+            raise ValidationError("Start date cannot be in the past.")
+        #end_date must be after start_date
+        if end_date < start_date:
+            raise ValidationError("Start date cannot be after end date.")
+
+        return cleaned_data
 
 def index(request):
     return render(request, "myDesk/index.html")
@@ -172,16 +191,25 @@ def toggle_employee_status(request):
 def vacation_request(request):
     if request.method == "POST":
         form = RequestForm(request.POST)
+    
         if form.is_valid():
-            new_request = Request(
-                start_date=form.cleaned_data["start_date"],
-                end_date = form.cleaned_data["end_date"],
-                request_user = request.user.profile,
-                approved = False
-                )
-            new_request.save()
+            new_request = form.save(commit=False)
+    
+            if Request.objects.filter(start_date__lte=new_request.start_date, end_date__gte=new_request.end_date, request_user=request.user.profile).count():
+                messages.error(request, 'You have vacation days overlapping. Check it again, please.')
+            else:
+                new_request.request_user = request.user.profile
+                new_request.approved = False
+                new_request.save()
+                messages.success(request, 'Your request was sent')
+    
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    
+    else:
+        form = RequestForm()
 
-    return render(request, "myDesk/request.html")
+    return render(request, "myDesk/request.html", {"form": form})
 
 def get_requests(request):
     vacation_requests = Request.objects.filter(request_user=request.user.profile.id).order_by("start_date", "end_date").values("start_date", "end_date", "approved", "request_user")

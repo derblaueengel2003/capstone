@@ -91,8 +91,8 @@
     <form action="{% url 'add_team' %}" method="post">
             {% csrf_token %}
             {{ team_form }}
-            <input class="btn btn-primary" type="submit" value="Add Team">
-        </form>  
+            <input class="btn btn-primary mt-2" type="submit" value="Add Team">
+     </form>  
     </div>
     </div>
     </div>
@@ -121,13 +121,13 @@
                 <div class="vacation_days">Vacation Days: <span>{{employee.vacation_days}}</span></div>
                 <div class="row">
                 <div class="col">
-                    <button type="button" class="col btn btn-primary btn-sm edit-employee-btn">Edit</button>
+                    <button type="button" class="col btn btn-primary btn-sm mt-2 edit-employee-btn">Edit</button>
                 </div>
                 <!-- Toggle is_active property of this user -->
                 <div class="col">
                     <form class="col delete-employee-form">
                         <input type="text" hidden class="delete-employee_id" value="{{employee.user.id}}" />
-                        <input type="submit" class="btn btn-danger btn-sm delete-employee-btn" value="Deactivate">
+                        <input type="submit" class="btn btn-danger btn-sm mt-2 delete-employee-btn" value="Deactivate">
                     </form>
                 </div>  
                 </div>  
@@ -177,7 +177,7 @@
                             <label for="floatingVacationDays">Vacation Days</label>
                         </div>
                         <input type="text" hidden class="edit-employee_id" value="{{employee.id}}" />
-                        <input type="submit" class="btn btn-sm btn-primary" value="Save" />
+                        <input type="submit" class="btn btn-sm mt-2 btn-primary" value="Save" />
                     </div>
                     </form>
                 </div>
@@ -224,7 +224,7 @@
     <form action="{% url 'add_company' %}" method="post" class="form-label">
             {% csrf_token %}
             {{ company_form }}
-            <input class="btn btn-primary" type="submit" value="Add Company">
+            <input class="btn btn-primary mt-2" type="submit" value="Add Company">
         </form>  
     </div>
     </div>
