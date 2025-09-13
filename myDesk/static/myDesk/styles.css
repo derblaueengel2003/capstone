@@ -3,10 +3,11 @@
     margin-right: 20px;
 }
 
-.employee {
-
+.date-control {
+    width: 18rem;
 }
 
-.team {
-
+.btn-margin {
+    text-align: right;
+    margin-left: 20px;
 }

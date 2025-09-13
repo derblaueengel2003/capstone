@@ -11,7 +11,11 @@ urlpatterns = [
     path("add-team", views.team, name="add_team"),
     path("edit-team", views.edit_team, name="edit_team"),
     path("delete-team", views.delete_team, name="delete_team"),
-    # path("add-employee", views.employee, name="add_employee"),
     path("edit-employee", views.edit_employee, name="edit_employee"),
     path("delete-employee", views.toggle_employee_status, name="toggle_employee_status"),
+    path("requests", views.vacation_request, name="vacation_requests"),
+    path("get-requests", views.get_requests, name="get_vacation_requests"),
+    path("add-request", views.vacation_request, name="add_request"),
+    path("edit-request", views.edit_request, name="edit_request"),
+    path("delete-request", views.delete_request, name="delete_request"),
 ]

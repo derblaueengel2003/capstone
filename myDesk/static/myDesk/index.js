@@ -76,7 +76,6 @@ function deleteRecord(index, section) {
         body: JSON.stringify(fieldsValue),
       })
         .then((response) => {
-            document.querySelectorAll(`.${section}`)[index].style.display = 'none';
         window.location.reload();
 
         });

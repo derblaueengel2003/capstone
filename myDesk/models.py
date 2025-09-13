@@ -62,3 +62,15 @@ class Request(models.Model):
     end_date = models.DateField()
     request_user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='vacation_requests')
     approved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.request_user.user.username
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "start_date": self.start_date,
+            "end_date": self.end_date,
+            # "request_user": self.request_user,
+            "approved": self.approved,
+            }  

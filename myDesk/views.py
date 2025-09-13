@@ -1,13 +1,12 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from .models import Company, Team, Profile
+from .models import Company, Team, Profile, Request
 from django.contrib.auth.models import User
 from django import forms
 from django.views.decorators.csrf import csrf_exempt
 import json
-from django.http import JsonResponse
 from django.forms import ModelChoiceField, CharField
 from django.contrib import messages
 from datetime import datetime
@@ -39,6 +38,11 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ["user", "team", "role", "employment_date", "vacation_days", "id"]
+
+class RequestForm(forms.ModelForm):
+    class Meta:
+        model = Request
+        fields = ['start_date', 'end_date']
 
 def index(request):
     return render(request, "myDesk/index.html")
@@ -139,21 +143,6 @@ def delete_team(request):
     team_to_delete.delete()
     return JsonResponse(team_to_delete.serialize())
 
-def employee(request):
-    if request.method == "POST":
-        print(request)
-        form = ProfileForm(request.POST)
-        if form.is_valid():
-            new_employee = Profile(
-                team=form.cleaned_data["team"],
-                role=form.cleaned_data["role"],
-                employment_date=datetime.strptime(form.cleaned_data["employment_date"], "%Y-%m-%d"),
-                vacation_days=form.cleaned_data["vacation_days"],  
-                )
-            new_employee.save()
-
-    return HttpResponseRedirect(reverse("admin_dashboard"))
-
 @csrf_exempt
 def edit_employee(request):
     data = json.loads(request.body)
@@ -171,8 +160,6 @@ def edit_employee(request):
     employee.save()
     return JsonResponse(employee.serialize())
 
-
-#da rivedere, meglio disattivare che cancellare
 @csrf_exempt
 def toggle_employee_status(request):
     data = json.loads(request.body)
@@ -181,5 +168,31 @@ def toggle_employee_status(request):
     employee_to_delete.user.save()
     return JsonResponse(employee_to_delete.serialize())
 
+@csrf_exempt
+def vacation_request(request):
+    if request.method == "POST":
+        form = RequestForm(request.POST)
+        if form.is_valid():
+            new_request = Request(
+                start_date=form.cleaned_data["start_date"],
+                end_date = form.cleaned_data["end_date"],
+                request_user = request.user.profile,
+                approved = False
+                )
+            new_request.save()
 
+    return render(request, "myDesk/request.html")
 
+def get_requests(request):
+    vacation_requests = Request.objects.filter(request_user=request.user.profile.id).order_by("start_date", "end_date").values("start_date", "end_date", "approved", "request_user")
+    data = list(vacation_requests)
+    return JsonResponse(data, safe=False)
+
+@csrf_exempt
+def edit_request(request):
+
+    pass
+
+@csrf_exempt
+def delete_request(request):
+    pass

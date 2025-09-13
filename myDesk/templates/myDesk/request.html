@@ -1,0 +1,102 @@
+{% extends "myDesk/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+<h2>{{ user.get_full_name }}</h2>
+   
+<div id="app"></div>
+
+<script type="text/babel">
+        
+function formatDate(dateString) {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("en-EN", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+ function Title() {
+  return (
+    <div>
+      <h4>Your vacation requests</h4>
+    </div>
+  );
+}
+
+function VacationRequests() {
+  const [requests, setRequests] = React.useState([]);
+  // Need to use useEffect to run fetch only 1 time when the component is mounted.
+  // otherwise it starts an infinite loop
+  React.useEffect(() => {
+    fetch("/get-requests")
+      .then((response) => response.json())
+      .then((result) => {
+        setRequests(result);
+        console.log(result);
+      })
+      .catch((error) => console.error("Fetch error:", error));
+  }, []); // <- vuoto = eseguito solo al primo render
+
+  return (
+   <div className="section">
+  <ul className="list-group">
+    {requests.map((request) => (
+      <li className="list-group-item" key={request.id}>
+        <div className="d-flex justify-content-between align-items-center">
+          <span>
+            From {formatDate(request.start_date)} to {formatDate(request.end_date)} (Approval status:
+            {request.approved ? " Approved" : " Pending"})
+          </span>
+          <div>
+            <button className="btn btn-sm btn-primary me-2">Edit</button>
+            <button className="btn btn-sm btn-danger">Delete</button>
+          </div>
+        </div>
+      </li>
+    ))}
+  </ul>
+</div>
+
+  );
+}
+
+function MakeRequest() {
+return (
+    <div className="card section date-control">
+        
+        <div className="card-body">
+            <h4 className="card-title">Make a new request</h4>
+                <form action="/add-request" method="POST">
+                    <div className="form-floating">
+                    <input type="date" className="form-control" id="floatingStartDate" name="start_date" />
+                    <label for="floatingStartDate">Start Date</label> 
+                    <div className="form-floating">
+                    <input type="date" className="form-control" id="floatingEndDate" name="end_date" />
+                    <label for="floatingEndDate">End Date</label>
+                    <input type="submit" className="btn btn-sm btn-primary" value="Send request" />
+                    </div>
+                    </div>
+                </form>
+            </div>
+    </div>
+)
+}
+
+function App() {
+  return (
+    <div>
+      <Title />
+      <VacationRequests />
+      <MakeRequest />
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.querySelector("#app"));
+
+    </script>
+
+{% endblock %}
