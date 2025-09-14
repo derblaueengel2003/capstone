@@ -7,6 +7,7 @@ const employeeFields = [
   'vacation_days',
   'employee_id',
 ];
+const requestFields = ['start_date', 'end_date', 'request_id']
 
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -14,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
   setSectionButtons('company', companyFields);
   setSectionButtons('team', teamFields);
   setSectionButtons('employee', employeeFields);
+  setSectionButtons('request', requestFields)
 });
 
 function setSectionButtons(section, fields) {
@@ -43,7 +45,7 @@ function editRecord(index, section, fields) {
             fieldValues[`${field}`] = document.querySelectorAll(`.edit-${field}`)[index].value
         })
 
-    fetch(`/edit-${section}`, {
+    fetch(`/admin-dashboard/edit-${section}`, {
         method: 'POST',
         body: JSON.stringify(fieldValues),
     })
@@ -71,14 +73,12 @@ function deleteRecord(index, section) {
       
       console.log(fieldsValue)
 
-      fetch(`/delete-${section}`, {
+      fetch(`/admin-dashboard/delete-${section}`, {
         method: 'POST',
         body: JSON.stringify(fieldsValue),
-      })
-        .then((response) => {
+      }).then((response) => {
         window.location.reload();
-
-        });
+      });
     };
 }
 

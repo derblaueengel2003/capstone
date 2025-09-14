@@ -1,6 +1,7 @@
 from django.contrib import admin
+from adminDashboard.models import Team, Company, Profile
+from .models import Request
 
-from .models import Team, Profile, Company, Request
 
 # Register your models here.
 admin.site.register(Team)
