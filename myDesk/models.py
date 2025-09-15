@@ -5,6 +5,7 @@ class Request(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     request_user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='vacation_requests')
+    processed = models.BooleanField(default=False)
     approved = models.BooleanField(default=False)
 
     def __str__(self):
@@ -15,5 +16,6 @@ class Request(models.Model):
             "id": self.id,
             "start_date": self.start_date,
             "end_date": self.end_date,
+            "processed": self.processed,
             "approved": self.approved,
             }  

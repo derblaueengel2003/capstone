@@ -4,205 +4,73 @@
 {% block body %}
 
 <h2>{{ user.get_full_name }}</h2>
-   
-<div id="app"></div>
 
-<script type="text/babel">
-        
-    function formatDate(dateString) {
-        if (!dateString) return "";
-        return new Date(dateString).toLocaleDateString("en-EN", {
-            day: "2-digit",
-            month: "long",
-            year: "numeric",
-        });
-    }
-    
-function EditButton({ request }) {
-  const [isEditing, setIsEditing] = React.useState(false);
-  const [startDate, setStartDate] = React.useState(request.start_date);
-  const [endDate, setEndDate] = React.useState(request.end_date);
-  const [error, setError] = React.useState(null);
+{% if not vacation_requests%}
+<h4> You have no vacation request</h4>
+<h5>Use the form below to submit your request</h5>
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+{% else %}
+<h4>Your requests:</h4>
 
-    fetch(`/edit-request/${request.id}/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        start_date: startDate,
-        end_date: endDate,
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setError(null);
-          setIsEditing(false);
-          // aggiorna senza ricaricare tutta la pagina
-          window.location.reload(); // oppure: aggiorna lo stato parent
-        } else {
-          setError(data.errors);
-        }
-      })
-      .catch((err) => setError("Errore di connessione al server"));
-  };
-
-  return (
-    <div>
-      {!isEditing ? (
-        <button
-          className="btn btn-sm btn-primary me-2"
-          onClick={() => setIsEditing(true)}
-        >
-          Edit
-        </button>
-      ) : (
-        <div className="card-body">
-          <form className="edit-request-form" onSubmit={handleSubmit}>
-            <div className="form-floating mb-2">
-              <input
-                type="date"
-                className="form-control"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-              <label>Start date</label>
-            </div>
-            <div className="form-floating mb-2">
-              <input
-                type="date"
-                className="form-control"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-              <label>End date</label>
-            </div>
-            {error && <div className="alert alert-danger">{error}</div>}
-            <div className="d-flex gap-2">
-              <button type="submit" className="btn btn-sm btn-success">
-                Save
-              </button>
-              <button
-                type="button"
-                className="btn btn-sm btn-secondary"
-                onClick={() => setIsEditing(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
+ <ul class="list-group">
+    {% for vacation in vacation_requests %}
+        <li class="list-group-item m-2 vacation_request">
+        <div class="row p-2">
+        <div class="col-3 start_date"><span>Start date: {{vacation.start_date}}</span></div>
+        <div class="col-3 end_date"><span>End date: {{vacation.end_date}}</span></div>
+        <div class="col-3 approved"><span>Approval status: 
+          {% if not vacation.processed %}
+          Pending
+          {% elif vacation.approved %}
+          Approved!
+          {% else %}
+          Denied.
+          {% endif %}
+        </span></div>
+        <div class="col-1">
+            <button type="button" class="col btn btn-primary btn-sm edit-vacation_request-btn">Edit</button>
         </div>
-      )}
-    </div>
-  );
-}
-
-function DeleteButton({ request_id, onDelete }) {
-  const [error, setError] = React.useState(null);
-
-  const handleDelete = (e) => {
-    e.preventDefault();
-
-    fetch("/delete-request", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ request_id }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setError(null);
-          onDelete(request_id); // aggiorna lo stato nel parent
-        } else {
-          setError(data.errors);
-        }
-      })
-      .catch(() => setError("Errore durante l'eliminazione"));
-  };
-
-  return (
-    <div>
-      {error && <div className="alert alert-danger">{error}</div>}
-      <button
-        className="btn btn-danger btn-sm"
-        onClick={handleDelete}
-      >
-        Delete
-      </button>
-    </div>
-  );
-}
-
-    function Title() {
-        return (
-            <div>
-                <h4>Your vacation requests</h4>
+       <!-- Delete vacation_request record -->
+        <div class="col-1">
+             <form class="col delete-vacation_request-form">
+            <input type="text" hidden class="delete-vacation_request_id" value="{{vacation.id}}" />
+            <input type="submit" class="btn btn-danger btn-sm delete-vacation_request-btn" value="Delete">
+        </form>
+        </div>  
+        </div>
+       <!-- Edit vacation_request infos -->
+        <div class="row g-2 edit-vacation_request-view" style="display: none;">
+            <form class="edit-vacation_request-form">
+                <div class="col">
+                <div class="form-floating">
+                <input type="text" class="edit-start_date form-control" id="floatingStartDate" value="{{vacation.start_date}}" />
+                <label for="floatingStarDate">Start date</label>
                 </div>
-            );
-        }
-        
-function VacationRequests() {
-  const [requests, setRequests] = React.useState([]);
+                <div class="form-floating">
+                <input type="text" class="edit-end_date form-control" id="floatingEndDate" value="{{vacation.end_date}}" />
+                <label for="floatingEndDate">End date</label>
+                </div>
+                </div>
 
-  React.useEffect(() => {
-    fetch("/get-requests")
-      .then((response) => response.json())
-      .then((result) => {
-        setRequests(result);
-      })
-      .catch((error) => console.error("Fetch error:", error));
-  }, []);
-
-  const handleDelete = (id) => {
-    setRequests((prev) => prev.filter((r) => r.id !== id));
-  };
-
-  return (
-    <div className="section">
-      <ul className="list-group">
-        {requests.map((request) => (
-          <li className="list-group-item" key={request.id}>
-            <div className="d-flex justify-content-between align-items-center">
-              <span>
-                From {formatDate(request.start_date)} to {formatDate(request.end_date)}{" "}
-                (Approval status: {request.approved ? " Approved" : " Pending"})
-              </span>
-              <div>
-                <EditButton request={request} />
-                <DeleteButton request_id={request.id} onDelete={handleDelete} />
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
+                <input type="text" hidden class="edit-vacation_request_id" value="{{vacation.id}}" />
+                <input type="submit" class="btn btn-sm btn-primary" value="Save" />
+            </form>
+        </div>
+        </li>
+    {% endfor %}
+    </ul>
     </div>
-  );
-}
+    <hr>
 
-function App() {
-  return (
-    <div>
-      <Title />
-      <VacationRequests />   
-    </div>
-  );
-}
+{% endif %}
+   
 
-ReactDOM.render(<App />, document.querySelector("#app"));
-
-    </script>
  <div class="card section" style="width: 18rem;">
     <div class="card-body"><h4 class="card-title">New vacation request</h4>
     <div>
     <form action="{% url 'add_request' %}" method="post">
             {% csrf_token %}
-            {{ form }}
+            {{ vacation_request_form }}
             <button class="btn btn-primary mt-2" type="submit">Send request</button>
      </form>  
     </div>

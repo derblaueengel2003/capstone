@@ -54,10 +54,15 @@ class RequestForm(forms.ModelForm):
 
         return cleaned_data
 
-
+@login_required
 def index(request):
-    return render(request, "myDesk/index.html")
+    vacation_requests = Request.objects.filter(request_user=request.user.profile.id).order_by("start_date", "end_date").values()
+    return render(request, "myDesk/index.html", {
+        "vacation_requests": vacation_requests,
+        "vacation_request_form": RequestForm()
+    })
 
+@login_required
 @csrf_exempt
 def vacation_request(request):
     if request.method == "POST":
@@ -71,95 +76,33 @@ def vacation_request(request):
             return redirect("vacation_requests")  
         else:
             messages.error(request, 'Please correct the errors below.')
-    else:
-        form = RequestForm(user=request.user)
+            vacation_requests = Request.objects.filter(
+                request_user=request.user.profile.id
+            ).order_by("start_date", "end_date").values()
 
-    return render(request, "myDesk/request.html", {"form": form})
+            return render(request, "myDesk/request.html", {
+                "vacation_requests": vacation_requests,
+                "vacation_request_form": form  # ritorno il form con errori
+            })
 
-@login_required
-def get_requests(request):
-    vacation_requests = Request.objects.filter(request_user=request.user.profile.id).order_by("start_date", "end_date").values("start_date", "end_date", "approved", "request_user", "id")
-    data = list(vacation_requests)
-    return JsonResponse(data, safe=False)
+    # GET
+    vacation_requests = Request.objects.filter(
+        request_user=request.user.profile.id
+    ).order_by("start_date", "end_date").values()
+
+    return render(request, "myDesk/request.html", {
+        "vacation_requests": vacation_requests,
+        "vacation_request_form": RequestForm(user=request.user)
+    })
+
 
 
 @csrf_exempt
 def edit_request(request, request_id):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-
-            start_date = data.get("start_date")
-            end_date = data.get("end_date")
-
-            if not start_date or not end_date:
-                return JsonResponse({"success": False, "errors": "Both dates are required."}, status=400)
-
-            # parsing stringhe ISO "yyyy-mm-dd" in oggetti date
-            start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
-            end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
-
-            today = datetime.date.today()
-            if start_date < today:
-                return JsonResponse({"success": False, "errors": "Start date cannot be in the past."}, status=400)
-            if end_date < start_date:
-                return JsonResponse({"success": False, "errors": "End date must be after start date."}, status=400)
-
-            # prendo la richiesta da modificare
-            try:
-                vacation_request = Request.objects.get(pk=request_id, request_user=request.user.profile)
-            except Request.DoesNotExist:
-                return JsonResponse({"success": False, "errors": "Request not found."}, status=404)
-
-            # controllo sovrapposizioni (escludendo la richiesta stessa)
-            overlap = Request.objects.filter(
-                request_user=request.user.profile,
-                start_date__lte=end_date,
-                end_date__gte=start_date
-            ).exclude(pk=vacation_request.pk)
-
-            if overlap.exists():
-                return JsonResponse({"success": False, "errors": "Dates overlap with an existing request."}, status=400)
-
-            # aggiorno i campi
-            vacation_request.start_date = start_date
-            vacation_request.end_date = end_date
-            vacation_request.approved = False  # reset approvazione dopo edit
-            vacation_request.save()
-
-            return JsonResponse({
-                "success": True,
-                "request": {
-                    "id": vacation_request.id,
-                    "start_date": str(vacation_request.start_date),
-                    "end_date": str(vacation_request.end_date),
-                    "approved": vacation_request.approved,
-                }
-            })
-
-        except ValidationError as e:
-            return JsonResponse({"success": False, "errors": str(e)}, status=400)
-        except Exception as e:
-            return JsonResponse({"success": False, "errors": str(e)}, status=500)
-
-    return JsonResponse({"success": False, "errors": "Invalid method."}, status=405)
+    pass
 
 
 @csrf_exempt
 def delete_request(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            request_id = data.get("request_id")
-
-            req = Request.objects.get(pk=request_id, request_user=request.user.profile)
-            req.delete()
-
-            return JsonResponse({"success": True})
-        except Request.DoesNotExist:
-            return JsonResponse({"success": False, "errors": "Request not found."}, status=404)
-        except Exception as e:
-            return JsonResponse({"success": False, "errors": str(e)}, status=500)
-
-    return JsonResponse({"success": False, "errors": "Invalid method."}, status=405)
+   pass
 
