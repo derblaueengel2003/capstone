@@ -7,6 +7,7 @@ const employeeFields = [
   'vacation_days',
   'employee_id',
 ];
+const requestFields = ['start_date', 'end_date', 'request_id']
 
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -14,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
   setSectionButtons('company', companyFields);
   setSectionButtons('team', teamFields);
   setSectionButtons('employee', employeeFields);
+  setSectionButtons('request', requestFields)
 });
 
 function setSectionButtons(section, fields) {
@@ -37,17 +39,13 @@ function editRecord(index, section, fields) {
   document.querySelectorAll(`.edit-${section}-btn`)[index].style.display =
     'none';   
     
-    document.querySelectorAll(`.edit-${section}-form`)[index].onsubmit = (e) => {
-        // e.preventDefault();
-        console.log(fields)
+    document.querySelectorAll(`.edit-${section}-form`)[index].onsubmit = () => {
         const fieldValues = {}
         fields.forEach((field) => {
             fieldValues[`${field}`] = document.querySelectorAll(`.edit-${field}`)[index].value
         })
 
-        console.log(fieldValues)
-
-    fetch(`/edit-${section}`, {
+    fetch(`/admin-dashboard/edit-${section}`, {
         method: 'POST',
         body: JSON.stringify(fieldValues),
     })
@@ -58,7 +56,7 @@ function editRecord(index, section, fields) {
         ].style.display = 'none';
         document.querySelectorAll(`.edit-${section}-btn`)[index].style.display =
             'block';
-        console.log(result)
+        
         window.location.reload()
         });
     return false;
@@ -67,8 +65,7 @@ function editRecord(index, section, fields) {
 
 //DELETE
 function deleteRecord(index, section) {
-    document.querySelectorAll(`.delete-${section}-form`)[index].onsubmit = (e) => {
-    //   e.preventDefault();
+    document.querySelectorAll(`.delete-${section}-form`)[index].onsubmit = () => {
       const fieldsValue = {}
       fieldsValue[`${section}_id`] = document.querySelectorAll(
         `.delete-${section}_id`
@@ -76,16 +73,12 @@ function deleteRecord(index, section) {
       
       console.log(fieldsValue)
 
-      fetch(`/delete-${section}`, {
+      fetch(`/admin-dashboard/delete-${section}`, {
         method: 'POST',
         body: JSON.stringify(fieldsValue),
-      })
-        // .then((response) => response.json())
-        .then((response) => {
-            document.querySelectorAll(`.${section}`)[index].style.display = 'none';
+      }).then((response) => {
         window.location.reload();
-
-        });
+      });
     };
 }
 

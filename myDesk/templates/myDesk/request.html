@@ -1,0 +1,212 @@
+{% extends "myDesk/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+<h2>{{ user.get_full_name }}</h2>
+   
+<div id="app"></div>
+
+<script type="text/babel">
+        
+    function formatDate(dateString) {
+        if (!dateString) return "";
+        return new Date(dateString).toLocaleDateString("en-EN", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+        });
+    }
+    
+function EditButton({ request }) {
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [startDate, setStartDate] = React.useState(request.start_date);
+  const [endDate, setEndDate] = React.useState(request.end_date);
+  const [error, setError] = React.useState(null);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    fetch(`/edit-request/${request.id}/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        start_date: startDate,
+        end_date: endDate,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setError(null);
+          setIsEditing(false);
+          // aggiorna senza ricaricare tutta la pagina
+          window.location.reload(); // oppure: aggiorna lo stato parent
+        } else {
+          setError(data.errors);
+        }
+      })
+      .catch((err) => setError("Errore di connessione al server"));
+  };
+
+  return (
+    <div>
+      {!isEditing ? (
+        <button
+          className="btn btn-sm btn-primary me-2"
+          onClick={() => setIsEditing(true)}
+        >
+          Edit
+        </button>
+      ) : (
+        <div className="card-body">
+          <form className="edit-request-form" onSubmit={handleSubmit}>
+            <div className="form-floating mb-2">
+              <input
+                type="date"
+                className="form-control"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+              <label>Start date</label>
+            </div>
+            <div className="form-floating mb-2">
+              <input
+                type="date"
+                className="form-control"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+              <label>End date</label>
+            </div>
+            {error && <div className="alert alert-danger">{error}</div>}
+            <div className="d-flex gap-2">
+              <button type="submit" className="btn btn-sm btn-success">
+                Save
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-secondary"
+                onClick={() => setIsEditing(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DeleteButton({ request_id, onDelete }) {
+  const [error, setError] = React.useState(null);
+
+  const handleDelete = (e) => {
+    e.preventDefault();
+
+    fetch("/delete-request", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ request_id }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setError(null);
+          onDelete(request_id); // aggiorna lo stato nel parent
+        } else {
+          setError(data.errors);
+        }
+      })
+      .catch(() => setError("Errore durante l'eliminazione"));
+  };
+
+  return (
+    <div>
+      {error && <div className="alert alert-danger">{error}</div>}
+      <button
+        className="btn btn-danger btn-sm"
+        onClick={handleDelete}
+      >
+        Delete
+      </button>
+    </div>
+  );
+}
+
+    function Title() {
+        return (
+            <div>
+                <h4>Your vacation requests</h4>
+                </div>
+            );
+        }
+        
+function VacationRequests() {
+  const [requests, setRequests] = React.useState([]);
+
+  React.useEffect(() => {
+    fetch("/get-requests")
+      .then((response) => response.json())
+      .then((result) => {
+        setRequests(result);
+      })
+      .catch((error) => console.error("Fetch error:", error));
+  }, []);
+
+  const handleDelete = (id) => {
+    setRequests((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  return (
+    <div className="section">
+      <ul className="list-group">
+        {requests.map((request) => (
+          <li className="list-group-item" key={request.id}>
+            <div className="d-flex justify-content-between align-items-center">
+              <span>
+                From {formatDate(request.start_date)} to {formatDate(request.end_date)}{" "}
+                (Approval status: {request.approved ? " Approved" : " Pending"})
+              </span>
+              <div>
+                <EditButton request={request} />
+                <DeleteButton request_id={request.id} onDelete={handleDelete} />
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div>
+      <Title />
+      <VacationRequests />   
+    </div>
+  );
+}
+
+ReactDOM.render(<App />, document.querySelector("#app"));
+
+    </script>
+ <div class="card section" style="width: 18rem;">
+    <div class="card-body"><h4 class="card-title">New vacation request</h4>
+    <div>
+    <form action="{% url 'add_request' %}" method="post">
+            {% csrf_token %}
+            {{ form }}
+            <button class="btn btn-primary mt-2" type="submit">Send request</button>
+     </form>  
+    </div>
+    </div>
+    </div>
+
+{% endblock %}

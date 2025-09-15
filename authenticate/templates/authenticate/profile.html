@@ -1,0 +1,34 @@
+{% extends "myDesk/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+<h2>{{ user.get_full_name }}</h2>
+<div class="row section">
+    <h3>Your Infos</h3>
+    <div class="card text-bg-light" style="width: auto">
+        <div class="card-body profile">
+        
+        <div class="card-title">{{ user.username }}</div>
+        <div class="">Team: {{ user.profile.team }}</div>
+        <div class="">Role: {{ user.profile.role }}</div>
+        <div class="">Employment date: {{ user.profile.employment_date }}</div>
+        <div class="">Vacation days: {{ user.profile.vacation_days }}</div>
+        
+    </div>
+</div>
+<hr>
+
+<div class="card section" style="width: 18rem;">
+<div class="card-body"><h4 class="card-title">Edit your Informations:</h4><div>
+<form action="{% url 'edit_user' %}" method="post">
+        {% csrf_token %}
+        {{ user_form }}
+        <!-- {{ profile_form }} -->
+        <input class="btn btn-primary mt-2" type="submit" value="Update Infos">
+    </form>  
+</div>
+</div>
+</div>
+
+{% endblock %}
