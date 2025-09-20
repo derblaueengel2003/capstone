@@ -82,7 +82,7 @@ def vacation_request(request):
 
             return render(request, "myDesk/request.html", {
                 "vacation_requests": vacation_requests,
-                "vacation_request_form": form  # ritorno il form con errori
+                "vacation_request_form": form  
             })
 
     # GET
@@ -96,13 +96,42 @@ def vacation_request(request):
     })
 
 
-
+@login_required
 @csrf_exempt
 def edit_request(request, request_id):
-    pass
+    vacation_request = Request.objects.get(pk=request_id, request_user=request.user.profile)
 
+    if request.method == "POST":
+        form = RequestForm(request.POST, instance=vacation_request, user=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Vacation request updated successfully.")
+            return redirect("vacation_requests")  
+        else:
+            messages.error(request, "Please correct the errors below.")
+            return render(request, "myDesk/request.html", {
+                "vacation_requests": Request.objects.filter(request_user=request.user.profile.id).order_by("start_date"),
+                "vacation_request_form": form, 
+            })
 
+    # GET
+    form = RequestForm(instance=vacation_request, user=request.user)
+    return render(request, "myDesk/edit-request.html", {
+        "form": form,
+        "vacation_request": vacation_request
+    })
+    
+@login_required
 @csrf_exempt
-def delete_request(request):
-   pass
+def delete_request(request, request_id):
+    vacation_request = Request.objects.get(pk=request_id, request_user=request.user.profile)
 
+    if request.method == "POST":
+        vacation_request.delete()
+        messages.success(request, "Vacation request deleted successfully.")
+        return redirect("vacation_requests")
+
+    # GET: chiedo conferma
+    return render(request, "myDesk/delete-request.html", {
+        "vacation_request": vacation_request
+    })

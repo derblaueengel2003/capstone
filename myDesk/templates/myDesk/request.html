@@ -28,35 +28,15 @@
           {% endif %}
         </span></div>
         <div class="col-1">
-            <button type="button" class="col btn btn-primary btn-sm edit-vacation_request-btn">Edit</button>
+            <a href="{% url 'edit_request' vacation.id%}">
+              <button type="button" class="col btn btn-primary btn-sm edit-vacation_request-btn">Edit</button>
+            </a>
         </div>
-       <!-- Delete vacation_request record -->
         <div class="col-1">
-             <form class="col delete-vacation_request-form">
-            <input type="text" hidden class="delete-vacation_request_id" value="{{vacation.id}}" />
-            <input type="submit" class="btn btn-danger btn-sm delete-vacation_request-btn" value="Delete">
-        </form>
-        </div>  
-        </div>
-       <!-- Edit vacation_request infos -->
-        <div class="row g-2 edit-vacation_request-view" style="display: none;">
-            <form class="edit-vacation_request-form">
-                <div class="col">
-                <div class="form-floating">
-                <input type="text" class="edit-start_date form-control" id="floatingStartDate" value="{{vacation.start_date}}" />
-                <label for="floatingStarDate">Start date</label>
-                </div>
-                <div class="form-floating">
-                <input type="text" class="edit-end_date form-control" id="floatingEndDate" value="{{vacation.end_date}}" />
-                <label for="floatingEndDate">End date</label>
-                </div>
-                </div>
-
-                <input type="text" hidden class="edit-vacation_request_id" value="{{vacation.id}}" />
-                <input type="submit" class="btn btn-sm btn-primary" value="Save" />
-            </form>
-        </div>
-        </li>
+            <a href="{% url 'delete_request' vacation.id%}">
+              <button type="button" class="col btn btn-danger btn-sm delete-vacation_request-btn">Delete</button>
+            </a>
+        </div>     
     {% endfor %}
     </ul>
     </div>
