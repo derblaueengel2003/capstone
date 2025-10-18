@@ -24,14 +24,11 @@ const edit_buttons = document.querySelectorAll(`.edit-${section}-btn`);
 edit_buttons.forEach((button, index) => {
   button.addEventListener(`click`, () => editRecord(index, section, fields));
 });
-//DELETE FORM
-const delete_forms = document.querySelectorAll(`.delete-${section}-form`);
-delete_forms.forEach((form) => {
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    deleteRecord(form, section);
-  });
-});
+//DELETE BUTTON
+const delete_buttons = document.querySelectorAll(`.delete-${section}-btn`);
+delete_buttons.forEach((button, index) => {
+  button.addEventListener('click', () => deleteRecord(index, section))
+})
 }
 
 //EDIT
@@ -67,19 +64,21 @@ function editRecord(index, section, fields) {
 }
 
 //DELETE
-function deleteRecord(form, section) {
-  const idField = form.querySelector(`.delete-${section}_id`);
-  if (!idField) {
-    return;
-  }
+function deleteRecord(index, section) {
+    document.querySelectorAll(`.delete-${section}-form`)[index].onsubmit = () => {
+      const fieldsValue = {}
+      fieldsValue[`${section}_id`] = document.querySelectorAll(
+        `.delete-${section}_id`
+      )[index].value;
+      
+      console.log(fieldsValue)
 
-  const fieldsValue = {};
-  fieldsValue[`${section}_id`] = idField.value;
-
-  fetch(`/admin-dashboard/delete-${section}`, {
-    method: 'POST',
-    body: JSON.stringify(fieldsValue),
-  }).then(() => {
-    window.location.reload();
-  });
+      fetch(`/admin-dashboard/delete-${section}`, {
+        method: 'POST',
+        body: JSON.stringify(fieldsValue),
+      }).then((response) => {
+        window.location.reload();
+      });
+    };
 }
+
