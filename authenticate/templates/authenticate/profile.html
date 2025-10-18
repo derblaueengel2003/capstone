@@ -6,10 +6,10 @@
 <h2>{{ user.get_full_name }}</h2>
 <div class="row section">
     <h3>Your Infos</h3>
-    <div class="card text-bg-light" style="width: auto">
+    <div class="card m-2 text-bg-light" style="width: auto">
         <div class="card-body profile">
         
-        <div class="card-title">{{ user.username }}</div>
+        <div class="card-title">Username: {{ user.username }}</div>
         <div class="">Team: {{ user.profile.team }}</div>
         <div class="">Role: {{ user.profile.role }}</div>
         <div class="">Employment date: {{ user.profile.employment_date }}</div>
@@ -27,6 +27,7 @@
         <!-- {{ profile_form }} -->
         <input class="btn btn-primary mt-2" type="submit" value="Update Infos">
     </form>  
+</div>
 </div>
 </div>
 </div>

@@ -4,6 +4,7 @@
 {% block body %}
 
 <h2>{{ user.get_full_name }}</h2>
+<div class="row section">
 
 {% if not vacation_requests%}
 <h4> You have no vacation request</h4>
@@ -39,7 +40,7 @@
         </div>     
     {% endfor %}
     </ul>
-    </div>
+    
     <hr>
 
 {% endif %}
@@ -53,6 +54,7 @@
             {{ vacation_request_form }}
             <button class="btn btn-primary mt-2" type="submit">Send request</button>
      </form>  
+    </div>
     </div>
     </div>
     </div>
