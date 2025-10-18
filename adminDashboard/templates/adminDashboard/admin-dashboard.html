@@ -118,12 +118,14 @@
                     <button type="button" class="col btn btn-primary btn-sm mt-2 edit-employee-btn">Edit</button>
                 </div>
                 <!-- Toggle is_active property of this user -->
+                 {% if employee.user.id != user.id%}
                 <div class="col">
                     <form class="col delete-employee-form">
                         <input type="text" hidden class="delete-employee_id" value="{{employee.user.id}}" />
                         <input type="submit" class="btn btn-danger btn-sm mt-2 delete-employee-btn" value="Deactivate">
                     </form>
                 </div>  
+                {% endif %}
                 </div>  
             </div> 
             <!-- Edit employee infos -->
