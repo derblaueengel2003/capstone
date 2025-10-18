@@ -6,6 +6,11 @@
 <div class="row section">
   <h2 class="mb-4">{{ user.get_full_name }}</h2>
 
+  <div class="alert alert-info">
+    Vacation days for {{ vacation_year }}: <strong>{{ vacation_days_total }}</strong>. Used: <strong>{{ vacation_days_used }}</strong>.
+    Remaining: <strong>{{ vacation_days_remaining }}</strong>.
+  </div>
+
 {% if not vacation_requests%}
 <h4> You have no vacation request</h4>
 <h5>Use the form below to submit your request</h5>
@@ -15,10 +20,10 @@
 
  <ul class="list-group">
     {% for vacation in vacation_requests %}
-        <li class="list-group-item m-2 vacation_request">
+        <li class="list-group-item m-2 vacation_request border rounded {% if not vacation.processed %}bg-secondary-subtle{% elif vacation.approved %}bg-success-subtle{% else %}bg-danger-subtle{% endif %}">
         <div class="row p-2">
-        <div class="col-3 start_date"><span>Start date: {{vacation.start_date}}</span></div>
-        <div class="col-3 end_date"><span>End date: {{vacation.end_date}}</span></div>
+        <div class="col-2 start_date"><span>Start date: {{vacation.start_date}}</span></div>
+        <div class="col-2 end_date"><span>End date: {{vacation.end_date}}</span></div>
         <div class="col-3 approved"><span>Approval status: 
           {% if not vacation.processed %}
           Pending
@@ -28,16 +33,23 @@
           Denied.
           {% endif %}
         </span></div>
-        <div class="col-1">
-            <a href="{% url 'edit_request' vacation.id%}">
-              <button type="button" class="col btn btn-primary btn-sm edit-vacation_request-btn">Edit</button>
-            </a>
+        <div class="col-3">
+          {% if vacation.manager_message %}
+            <span>Message: {{ vacation.manager_message }}</span>
+          {% endif %}
         </div>
-        <div class="col-1">
-            <a href="{% url 'delete_request' vacation.id%}">
-              <button type="button" class="col btn btn-danger btn-sm delete-vacation_request-btn">Delete</button>
-            </a>
-        </div>     
+        {% if not vacation.processed %}
+            <div class="col-1">
+                <a href="{% url 'edit_request' vacation.id%}">
+                  <button type="button" class="col btn btn-primary btn-sm edit-vacation_request-btn">Edit</button>
+                </a>
+            </div>
+            <div class="col-1">
+                <a href="{% url 'delete_request' vacation.id%}">
+                  <button type="button" class="col btn btn-danger btn-sm delete-vacation_request-btn">Delete</button>
+                </a>
+            </div>
+        {% endif %}
     {% endfor %}
     </ul>
     

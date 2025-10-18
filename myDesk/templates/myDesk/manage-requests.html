@@ -13,12 +13,12 @@
             <h4>Team vacation requests</h4>
             <ul class="list-group">
                 {% for vacation in vacation_requests %}
-                    <li class="list-group-item m-2 vacation_request">
+                    <li class="list-group-item m-2 vacation_request border rounded {% if not vacation.processed %}bg-secondary-subtle{% elif vacation.approved %}bg-success-subtle{% else %}bg-danger-subtle{% endif %}">
                         <div class="row p-2">
                             <div class="col-3"><span>Employee: {{ vacation.request_user.user.get_full_name|default:vacation.request_user.user.username }}</span></div>
-                            <div class="col-3 start_date"><span>Start date: {{ vacation.start_date }}</span></div>
-                            <div class="col-3 end_date"><span>End date: {{ vacation.end_date }}</span></div>
-                            <div class="col-3 approved">
+                            <div class="col-2 start_date"><span>Start: {{ vacation.start_date }}</span></div>
+                            <div class="col-2 end_date"><span>End: {{ vacation.end_date }}</span></div>
+                            <div class="col-2 approved">
                                 <span>Status:
                                     {% if not vacation.processed %}
                                         Pending
@@ -28,6 +28,19 @@
                                         Denied
                                     {% endif %}
                                 </span>
+                            </div>
+                            <div class="col-3">
+                                {% if not vacation.processed %}
+                                    {% if vacation.usage_days_remaining is not None %}
+                                        <div>Days left ({{ vacation.usage_year }}): {{ vacation.usage_days_remaining }}</div>
+                                    {% endif %}
+                                    <div class="mt-2">
+                                        <a class="btn btn-success btn-sm" href="{% url 'approve_request' vacation.id %}">Approve</a>
+                                        <a class="btn btn-danger btn-sm" href="{% url 'deny_request' vacation.id %}">Deny</a>
+                                    </div>
+                                {% elif vacation.manager_message %}
+                                    <div>Message: {{ vacation.manager_message }}</div>
+                                {% endif %}
                             </div>
                         </div>
                     </li>

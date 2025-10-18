@@ -1,0 +1,21 @@
+{% extends "myDesk/layout.html" %}
+
+{% block body %}
+<div class="row section">
+    <h2>Deny vacation request</h2>
+    <div class="p-3 mb-3 vacation_request border rounded {% if not vacation_request.processed %}bg-secondary-subtle{% elif vacation_request.approved %}bg-success-subtle{% else %}bg-danger-subtle{% endif %}">
+        <p>Employee: {{ vacation_request.request_user.user.get_full_name|default:vacation_request.request_user.user.username }}</p>
+        <p>Start: {{ vacation_request.start_date }} — End: {{ vacation_request.end_date }}</p>
+        {% if vacation_request.manager_message %}
+            <p>Existing message: {{ vacation_request.manager_message }}</p>
+        {% endif %}
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-danger">Deny</button>
+        <a class="btn btn-secondary" href="{% url 'manage_requests' %}">Cancel</a>
+    </form>
+</div>
+{% endblock %}

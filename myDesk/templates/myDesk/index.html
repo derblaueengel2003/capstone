@@ -15,10 +15,55 @@
             <div class="">Employment date: {{ user.profile.employment_date }}</div>
             <div class="">Vacation days: {{ user.profile.vacation_days }}</div>
 
-        </div>
+    </div>
     </div>
     <hr>
 
+</div>
+
+<div class="row section">
+    {% if manager_pending_requests is not None %}
+        <div class="col-12 col-md-6 mb-3">
+            <div class="card border-info">
+                <div class="card-body">
+                    <h4 class="card-title">Team requests to review</h4>
+                    {% if team %}
+                        <p>You still need to process <strong>{{ manager_pending_requests }}</strong> vacation request{% if manager_pending_requests != 1 %}s{% endif %} for {{ team.team_name }}.</p>
+                    {% else %}
+                        <p>You are not assigned to a team yet, so there are no requests to review.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if user_summary %}
+        <div class="col-12 col-md-6 mb-3">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <h4 class="card-title">Your vacation summary</h4>
+                    <p>Total requests: <strong>{{ user_summary.total }}</strong></p>
+                    <p>Pending: <strong>{{ user_summary.pending }}</strong></p>
+                    <p>Approved: <strong>{{ user_summary.approved }}</strong></p>
+                    <p>Denied: <strong>{{ user_summary.denied }}</strong></p>
+                    <p>Vacation days for {{ user_summary.year }}: <strong>{{ user_summary.vacation_days }}</strong></p>
+                    <p>Used this year: <strong>{{ user_summary.days_used }}</strong></p>
+                    <p>Remaining this year: <strong>{{ user_summary.days_remaining }}</strong></p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if admin_profiles_to_process is not None %}
+        <div class="col-12 col-md-6 mb-3">
+            <div class="card border-warning">
+                <div class="card-body">
+                    <h4 class="card-title">New users to onboard</h4>
+                    <p>Profiles waiting for assignment or missing details: <strong>{{ admin_profiles_to_process }}</strong></p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 </div>
 
 {% endblock %}

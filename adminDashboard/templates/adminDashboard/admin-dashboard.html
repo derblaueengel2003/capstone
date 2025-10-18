@@ -15,14 +15,7 @@
         <div class="col">
             <button type="button" class="col btn btn-primary btn-sm edit-company-btn">Edit</button>
         </div>
-       <!-- Delete company record -->
-        <!-- <div class="col">
-             <form class="col delete-company-form">
-            <input type="text" hidden class="delete-company_id" value="{{company.id}}" />
-            <input type="submit" class="btn btn-danger btn-sm delete-company-btn" value="Delete">
-        </form>
-        </div>  
-        </div> -->
+
        <!-- Edit company infos -->
         <div class="row g-2 edit-company-view" style="display: none;">
             <form class="edit-company-form">
@@ -111,6 +104,7 @@
         <div class="card text-bg-light" style="width: 18rem;">
             <div class="card-body">
                 <div class="card-title firstname"><span>{{employee.user.get_full_name}}</span></div>
+                <div class="uername">Username: <span>{{employee.user.username}}</span></div>
                 {% if not employee.team.id %}
                     <div class="team">Team: Not assigned</span></div>
                   {% else %}

@@ -4,11 +4,16 @@
 {% block body %}
 <h3>Delete vacation request</h3>
 
-<p>
-    Are you sure you want to delete the request from 
-    <strong>{{ vacation_request.start_date }}</strong> to 
-    <strong>{{ vacation_request.end_date }}</strong>?
-</p>
+<div class="p-3 mb-3 vacation_request border rounded {% if not vacation_request.processed %}bg-secondary-subtle{% elif vacation_request.approved %}bg-success-subtle{% else %}bg-danger-subtle{% endif %}">
+    <p>
+        Are you sure you want to delete the request from 
+        <strong>{{ vacation_request.start_date }}</strong> to 
+        <strong>{{ vacation_request.end_date }}</strong>?
+    </p>
+    {% if vacation_request.manager_message %}
+        <p>Message: {{ vacation_request.manager_message }}</p>
+    {% endif %}
+</div>
 
 <form method="post">
     {% csrf_token %}
