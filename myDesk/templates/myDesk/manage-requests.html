@@ -1,0 +1,42 @@
+{% extends "myDesk/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+<div class="row section">
+    <h2 class="mb-4">{{ user.get_full_name }}{% if team %} — {{ team.team_name }}{% endif %}</h2>
+
+    {% if not team %}
+        <p>You are not assigned to a team yet, so there are no vacation requests to review.</p>
+    {% else %}
+        {% if vacation_requests %}
+            <h4>Team vacation requests</h4>
+            <ul class="list-group">
+                {% for vacation in vacation_requests %}
+                    <li class="list-group-item m-2 vacation_request">
+                        <div class="row p-2">
+                            <div class="col-3"><span>Employee: {{ vacation.request_user.user.get_full_name|default:vacation.request_user.user.username }}</span></div>
+                            <div class="col-3 start_date"><span>Start date: {{ vacation.start_date }}</span></div>
+                            <div class="col-3 end_date"><span>End date: {{ vacation.end_date }}</span></div>
+                            <div class="col-3 approved">
+                                <span>Status:
+                                    {% if not vacation.processed %}
+                                        Pending
+                                    {% elif vacation.approved %}
+                                        Approved
+                                    {% else %}
+                                        Denied
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No vacation requests have been submitted by your team yet.</p>
+        {% endif %}
+    {% endif %}
+</div>
+
+{% endblock %}

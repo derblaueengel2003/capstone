@@ -3,8 +3,8 @@
 
 {% block body %}
 
-<h2>{{ user.get_full_name }}</h2>
 <div class="row section">
+  <h2 class="mb-4">{{ user.get_full_name }}</h2>
 
 {% if not vacation_requests%}
 <h4> You have no vacation request</h4>

@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from .models import Request
@@ -135,3 +135,30 @@ def delete_request(request, request_id):
     return render(request, "myDesk/delete-request.html", {
         "vacation_request": vacation_request
     })
+
+@login_required
+@csrf_exempt
+def manage_request(request):
+    profile = request.user.profile
+
+    if profile.role != "Manager":
+        return HttpResponseForbidden("Only managers can view team vacation requests.")
+
+    team = profile.team
+    vacation_requests = Request.objects.none()
+
+    if team:
+        vacation_requests = (
+            Request.objects.filter(request_user__team=team)
+            .select_related("request_user__user")
+            .order_by("start_date", "end_date")
+        )
+
+    return render(
+        request,
+        "myDesk/manage-requests.html",
+        {
+            "team": team,
+            "vacation_requests": vacation_requests,
+        },
+    )

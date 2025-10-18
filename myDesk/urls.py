@@ -7,4 +7,5 @@ urlpatterns = [
     path("add-request", views.vacation_request, name="add_request"),
     path("edit-request/<int:request_id>/", views.edit_request, name="edit_request"),
     path("delete-request/<int:request_id>/", views.delete_request, name="delete_request"),
+    path("manage-requests", views.manage_request, name="manage_requests"),
 ]

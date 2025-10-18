@@ -3,8 +3,8 @@
 
 {% block body %}
 
-<h2>{{ user.get_full_name }}</h2>
 <div class="row section">
+    <h2 class="mb-4">{{ user.get_full_name }}</h2>
     <h3>Your Infos</h3>
     <div class="card m-2 text-bg-light" style="width: auto">
         <div class="card-body profile">
@@ -24,7 +24,6 @@
 <form action="{% url 'edit_user' %}" method="post">
         {% csrf_token %}
         {{ user_form }}
-        <!-- {{ profile_form }} -->
         <input class="btn btn-primary mt-2" type="submit" value="Update Infos">
     </form>  
 </div>
