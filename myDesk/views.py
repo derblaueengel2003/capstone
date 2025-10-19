@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
@@ -8,14 +8,13 @@ import datetime
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 import json
-
 from adminDashboard.models import Profile
-
 from .models import Request
 
 
 def get_vacation_usage(profile, year=None):
-    """Return (year, days_used, days_remaining) for approved vacations."""
+    # This helper function is used to calculate how many vacation days the user has left
+    # approved vacations are subtracted from the annual amount.
     if year is None:
         year = datetime.date.today().year
 
@@ -25,9 +24,10 @@ def get_vacation_usage(profile, year=None):
         start_date__year=year,
     )
 
-    days_used = sum(
-        (request.end_date - request.start_date).days + 1 for request in approved_requests
-    )
+    days_used = 0
+    for vacation_request in approved_requests:
+        days_difference = vacation_request.end_date - vacation_request.start_date
+        days_used += days_difference.days + 1
     days_remaining = profile.vacation_days - days_used
     return year, days_used, days_remaining
 
@@ -67,7 +67,7 @@ class RequestForm(forms.ModelForm):
                 start_date__lte=end_date,
                 end_date__gte=start_date
             )
-            if self.instance.pk:  # editing of an existing request
+            if self.instance.pk:
                 overlapping = overlapping.exclude(pk=self.instance.pk)
 
             if overlapping.exists():
@@ -120,9 +120,20 @@ def index(request):
     if request.user.is_staff:
         admin_profiles_to_process = 0
         for profile_record in Profile.objects.all():
-            needs_team = profile_record.team is None
-            needs_employment_date = profile_record.employment_date is None
-            needs_vacation_days = profile_record.vacation_days <= 0
+            if profile_record.team is None:
+                needs_team = True
+            else:
+                needs_team = False
+
+            if profile_record.employment_date is None:
+                needs_employment_date = True
+            else:
+                needs_employment_date = False
+
+            if profile_record.vacation_days <= 0:
+                needs_vacation_days = True
+            else:
+                needs_vacation_days = False
             if needs_team or needs_employment_date or needs_vacation_days:
                 admin_profiles_to_process += 1
 
@@ -287,10 +298,12 @@ def approve_request(request, request_id):
     if profile.role != "Manager":
         return HttpResponseForbidden("Only managers can approve vacation requests.")
 
-    vacation_request = get_object_or_404(
-        Request.objects.select_related("request_user__team", "request_user__user"),
-        pk=request_id,
-    )
+    vacation_request = Request.objects.select_related(
+        "request_user__team",
+        "request_user__user"
+    ).filter(pk=request_id).first()
+    if not vacation_request:
+        return HttpResponseForbidden("The vacation request you are looking for does not exist.")
 
     if vacation_request.request_user.team != profile.team:
         return HttpResponseForbidden("You can only approve requests from your team.")
@@ -327,10 +340,12 @@ def deny_request(request, request_id):
     if profile.role != "Manager":
         return HttpResponseForbidden("Only managers can deny vacation requests.")
 
-    vacation_request = get_object_or_404(
-        Request.objects.select_related("request_user__team", "request_user__user"),
-        pk=request_id,
-    )
+    vacation_request = Request.objects.select_related(
+        "request_user__team",
+        "request_user__user"
+    ).filter(pk=request_id).first()
+    if not vacation_request:
+        return HttpResponseForbidden("The vacation request you are looking for does not exist.")
 
     if vacation_request.request_user.team != profile.team:
         return HttpResponseForbidden("You can only deny requests from your team.")

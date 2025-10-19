@@ -6,6 +6,8 @@
 <div class="row section" style="width: 18rem;">
     <h2 class="mb-4">Admin Dashboard</h2>
     <h3>Company</h3>
+    <!-- The first setup is about the company. If there is no one
+     all other settings are not visible. -->
 {% if companies %}
     <ul class="list-group">
     {% for company in companies %}
@@ -112,7 +114,7 @@
                   {% endif %}
                 <div class="role">Role: <span>{{employee.role}}</span></div>
                 <div class="employment_date">Employment Date: <span>{{employee.employment_date}}</span></div>
-                <div class="vacation_days">Vacation Days: <span>{{employee.vacation_days}}</span></div>
+                <div class="vacation_days">Annual Vacation Days: <span>{{employee.vacation_days}}</span></div>
                 <div class="row">
                 <div class="col">
                     <button type="button" class="col btn btn-primary btn-sm mt-2 edit-employee-btn">Edit</button>
@@ -170,7 +172,7 @@
                         </div>
                         <div class="form-floating">
                             <input type="number" class="edit-vacation_days form-control" id="floatingVacationDays" value="{{employee.vacation_days}}" />
-                            <label for="floatingVacationDays">Vacation Days</label>
+                            <label for="floatingVacationDays">Annual Vacation Days</label>
                         </div>
                         <input type="text" hidden class="edit-employee_id" value="{{employee.id}}" />
                         <input type="submit" class="btn btn-sm mt-2 btn-primary" value="Save" />
@@ -213,6 +215,7 @@
     <hr>
 <!-- END MANAGE EMPLOYEE SECTION -->
 
+<!-- First setup for company infos -->
 {% else %}
     <div class="card section" style="width: 18rem;">
     <div class="card-body"><h4 class="card-title">Company Infos</h4>
