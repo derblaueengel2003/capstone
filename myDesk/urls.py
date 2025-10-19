@@ -3,11 +3,8 @@ from . import views
 
 urlpatterns = [
     path("", views.index, name="index"),
-    path("requests", views.vacation_request, name="vacation_requests"),
-    path("add-request", views.vacation_request, name="add_request"),
-    path("edit-request/<int:request_id>/", views.edit_request, name="edit_request"),
-    path("delete-request/<int:request_id>/", views.delete_request, name="delete_request"),
-    path("manage-requests", views.manage_request, name="manage_requests"),
-    path("manage-requests/<int:request_id>/approve", views.approve_request, name="approve_request"),
-    path("manage-requests/<int:request_id>/deny", views.deny_request, name="deny_request"),
+    path("add-request", views.add_request, name="add_request"),
+    path("edit-request", views.edit_request, name="edit_request"),
+    path("delete-request", views.delete_request, name="delete_request"),
+    path("update-request-status", views.update_request_status, name="update_request_status"),
 ]

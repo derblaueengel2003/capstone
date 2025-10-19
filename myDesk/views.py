@@ -1,11 +1,10 @@
-from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.shortcuts import render
+from django.http import JsonResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django import forms
 from django.views.decorators.csrf import csrf_exempt
 import datetime
-from django.contrib import messages
 from django.core.exceptions import ValidationError
 import json
 from adminDashboard.models import Profile
@@ -13,10 +12,9 @@ from .models import Request
 
 
 def get_vacation_usage(profile, year=None):
-    # This helper function is used to calculate how many vacation days the user has left
-    # approved vacations are subtracted from the annual amount.
     if year is None:
-        year = datetime.date.today().year
+        today = datetime.date.today()
+        year = today.year
 
     approved_requests = profile.vacation_requests.filter(
         processed=True,
@@ -28,6 +26,7 @@ def get_vacation_usage(profile, year=None):
     for vacation_request in approved_requests:
         days_difference = vacation_request.end_date - vacation_request.start_date
         days_used += days_difference.days + 1
+
     days_remaining = profile.vacation_days - days_used
     return year, days_used, days_remaining
 
@@ -35,21 +34,20 @@ def get_vacation_usage(profile, year=None):
 class RequestForm(forms.ModelForm):
     class Meta:
         model = Request
-        fields = ['start_date', 'end_date']
+        fields = ["start_date", "end_date"]
         widgets = {
-            "start_date": forms.TextInput(attrs={'class': 'form-control', 'type': 'date'}),
-            "end_date": forms.TextInput(attrs={'class': 'form-control', 'type': 'date'}),
+            "start_date": forms.TextInput(attrs={"class": "form-control", "type": "date"}),
+            "end_date": forms.TextInput(attrs={"class": "form-control", "type": "date"}),
         }
 
     def __init__(self, *args, **kwargs):
-        # I need to get the current user from the view
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
     def clean(self):
         cleaned_data = super().clean()
-        start_date = cleaned_data.get('start_date')
-        end_date = cleaned_data.get('end_date')
+        start_date = cleaned_data.get("start_date")
+        end_date = cleaned_data.get("end_date")
 
         if not start_date or not end_date:
             raise ValidationError("Start date and end date are mandatory.")
@@ -57,314 +55,213 @@ class RequestForm(forms.ModelForm):
         today = datetime.date.today()
         if start_date < today:
             raise ValidationError("Start date cannot be in the past.")
-        if end_date < start_date:
-            raise ValidationError("Start date cannot be after end date.")
 
-        # Check if there are overlapping requests
+        if end_date < start_date:
+            raise ValidationError("End date cannot be before start date.")
+
         if self.user:
             overlapping = Request.objects.filter(
                 request_user=self.user.profile,
                 start_date__lte=end_date,
-                end_date__gte=start_date
+                end_date__gte=start_date,
             )
             if self.instance.pk:
                 overlapping = overlapping.exclude(pk=self.instance.pk)
 
             if overlapping.exists():
-                raise ValidationError("You already have a vacation request overlapping these dates.")
+                raise ValidationError("You already have a vacation request for these dates.")
 
         return cleaned_data
 
 
-class ManagerDecisionForm(forms.Form):
-    manager_message = forms.CharField(
-        label="Message for the employee",
-        widget=forms.Textarea(attrs={"class": "form-control", "rows": 4}),
-        required=False,
-    )
-
 @login_required
 def index(request):
     profile = request.user.profile
-    vacation_requests = (
+
+    my_requests_qs = (
         Request.objects.filter(request_user=profile)
         .select_related("request_user__user")
         .order_by("start_date", "end_date")
     )
+    my_requests = list(my_requests_qs)
 
-    manager_pending_requests = None
-    user_summary = None
-    admin_profiles_to_process = None
-
-    if profile.role == "Manager":
-        pending_qs = Request.objects.none()
-        if profile.team:
-            pending_qs = Request.objects.filter(
-                request_user__team=profile.team,
-                processed=False,
-            )
-        manager_pending_requests = pending_qs.count()
-    else:
-        summary_year, days_used, days_remaining = get_vacation_usage(profile)
-        user_summary = {
-            "total": vacation_requests.count(),
-            "approved": vacation_requests.filter(processed=True, approved=True).count(),
-            "denied": vacation_requests.filter(processed=True, approved=False).count(),
-            "pending": vacation_requests.filter(processed=False).count(),
-            "vacation_days": profile.vacation_days,
-            "year": summary_year,
-            "days_used": days_used,
-            "days_remaining": days_remaining,
-        }
-
-    # Admin overview for ht homepage. Show if there is tasks to complete
-    # in the Admin Dashboard. This is the case if a user just registered
-    # and is not assigned to a team or is missing some details such as 
-    # annual vacation days and employment start date
-    if request.user.is_staff:
-        admin_profiles_to_process = 0
-        for profile_record in Profile.objects.all():
-            if profile_record.team is None:
-                needs_team = True
+    for vacation_request in my_requests:
+        days_difference = vacation_request.end_date - vacation_request.start_date
+        vacation_request.total_days = days_difference.days + 1
+        if vacation_request.processed:
+            if vacation_request.approved:
+                vacation_request.status_label = "Approved"
             else:
-                needs_team = False
-
-            if profile_record.employment_date is None:
-                needs_employment_date = True
-            else:
-                needs_employment_date = False
-
-            if profile_record.vacation_days <= 0:
-                needs_vacation_days = True
-            else:
-                needs_vacation_days = False
-            if needs_team or needs_employment_date or needs_vacation_days:
-                admin_profiles_to_process += 1
-
-    return render(request, "myDesk/index.html", {
-        "vacation_requests": vacation_requests,
-        "vacation_request_form": RequestForm(user=request.user),
-        "manager_pending_requests": manager_pending_requests,
-        "user_summary": user_summary,
-        "admin_profiles_to_process": admin_profiles_to_process,
-        "team": profile.team,
-    })
-
-@login_required
-@csrf_exempt
-def vacation_request(request):
-    usage_year, used_days, remaining_days = get_vacation_usage(request.user.profile)
-
-    if request.method == "POST":
-        form = RequestForm(request.POST, user=request.user)
-        if form.is_valid():
-            new_request = form.save(commit=False)
-            new_request.request_user = request.user.profile
-            new_request.approved = False
-            new_request.save()
-            messages.success(request, 'Your request was sent')
-            return redirect("vacation_requests")  
+                vacation_request.status_label = "Denied"
         else:
-            messages.error(request, 'Please correct the errors below.')
-            vacation_requests = Request.objects.filter(
-                request_user=request.user.profile
-            ).select_related("request_user__user").order_by("start_date", "end_date")
+            vacation_request.status_label = "Pending"
 
-            return render(request, "myDesk/request.html", {
-                "vacation_requests": vacation_requests,
-                "vacation_request_form": form,
-                "vacation_days_remaining": remaining_days,
-                "vacation_days_used": used_days,
-                "vacation_days_total": request.user.profile.vacation_days,
-                "vacation_year": usage_year,
-            })
+    summary_year, days_used, days_remaining = get_vacation_usage(profile)
 
-    # GET
-    vacation_requests = Request.objects.filter(
-        request_user=request.user.profile
-    ).select_related("request_user__user").order_by("start_date", "end_date")
+    user_summary = {
+        "year": summary_year,
+        "vacation_days": profile.vacation_days,
+        "days_used": days_used,
+        "days_remaining": days_remaining,
+        "total": len(my_requests),
+        "approved": 0,
+        "denied": 0,
+        "pending": 0,
+    }
 
-    return render(request, "myDesk/request.html", {
-        "vacation_requests": vacation_requests,
-        "vacation_request_form": RequestForm(user=request.user),
-        "vacation_days_remaining": remaining_days,
-        "vacation_days_used": used_days,
-        "vacation_days_total": request.user.profile.vacation_days,
-        "vacation_year": usage_year,
-    })
-
-
-@login_required
-@csrf_exempt
-def edit_request(request, request_id):
-    vacation_request = Request.objects.get(pk=request_id, request_user=request.user.profile)
-
-    if request.method == "POST":
-        form = RequestForm(request.POST, instance=vacation_request, user=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Vacation request updated successfully.")
-            return redirect("vacation_requests")  
+    for vacation_request in my_requests:
+        if vacation_request.processed:
+            if vacation_request.approved:
+                user_summary["approved"] += 1
+            else:
+                user_summary["denied"] += 1
         else:
-            messages.error(request, "Please correct the errors below.")
-            usage_year, used_days, remaining_days = get_vacation_usage(request.user.profile)
-            return render(request, "myDesk/request.html", {
-                "vacation_requests": Request.objects.filter(
-                    request_user=request.user.profile
-                )
-                .select_related("request_user__user")
-                .order_by("start_date", "end_date"),
-                "vacation_request_form": form,
-                "vacation_days_remaining": remaining_days,
-                "vacation_days_used": used_days,
-                "vacation_days_total": request.user.profile.vacation_days,
-                "vacation_year": usage_year,
-            })
+            user_summary["pending"] += 1
 
-    # GET
-    form = RequestForm(instance=vacation_request, user=request.user)
-    return render(request, "myDesk/edit-request.html", {
-        "form": form,
-        "vacation_request": vacation_request
-    })
-    
-@login_required
-@csrf_exempt
-def delete_request(request, request_id):
-    vacation_request = Request.objects.get(pk=request_id, request_user=request.user.profile)
+    manager_team_requests = []
+    manager_pending_requests = 0
+    manager_usage = {}
 
-    if request.method == "POST":
-        vacation_request.delete()
-        messages.success(request, "Vacation request deleted successfully.")
-        return redirect("vacation_requests")
-
-    # GET: chiedo conferma
-    return render(request, "myDesk/delete-request.html", {
-        "vacation_request": vacation_request
-    })
-
-@login_required
-@csrf_exempt
-def manage_request(request):
-    profile = request.user.profile
-
-    if profile.role != "Manager":
-        return HttpResponseForbidden("Only managers can view team vacation requests.")
-
-    team = profile.team
-
-    if not team:
-        vacation_requests = Request.objects.none()
-    else:
+    if profile.role == "Manager" and profile.team:
         team_requests_qs = (
-            Request.objects.filter(request_user__team=team)
+            Request.objects.filter(request_user__team=profile.team)
             .select_related("request_user__user")
             .order_by("start_date", "end_date")
         )
-        team_requests = []
-        profile_ids = []
-        for team_request in team_requests_qs:
-            team_requests.append(team_request)
-            profile_id = team_request.request_user_id
-            if profile_id not in profile_ids:
-                profile_ids.append(profile_id)
+        manager_team_requests = list(team_requests_qs)
 
         member_profiles = []
-        for profile_id in profile_ids:
-            member = Profile.objects.get(id=profile_id)
-            member_profiles.append(member)
+        member_ids = []
+        for team_request in manager_team_requests:
+            if not team_request.processed:
+                manager_pending_requests += 1
 
-        vacation_usage = {}
+            member_id = team_request.request_user_id
+            if member_id not in member_ids:
+                member_ids.append(member_id)
+                member_profiles.append(team_request.request_user)
+
         for member in member_profiles:
             year, used_days, remaining_days = get_vacation_usage(member)
-            vacation_usage[member.id] = {
+            manager_usage[member.id] = {
                 "year": year,
                 "used": used_days,
                 "remaining": remaining_days,
                 "total": member.vacation_days,
             }
 
-        vacation_requests = team_requests
-        for vacation in vacation_requests:
-            usage = vacation_usage.get(vacation.request_user_id)
+        for team_request in manager_team_requests:
+            usage = manager_usage.get(team_request.request_user_id)
             if usage:
-                vacation.usage_year = usage["year"]
-                vacation.usage_days_used = usage["used"]
-                vacation.usage_days_remaining = usage["remaining"]
-                vacation.usage_days_total = usage["total"]
+                team_request.usage_year = usage["year"]
+                team_request.usage_used = usage["used"]
+                team_request.usage_remaining = usage["remaining"]
+                team_request.usage_total = usage["total"]
+            else:
+                team_request.usage_year = summary_year
+                team_request.usage_used = 0
+                team_request.usage_remaining = team_request.request_user.vacation_days
+                team_request.usage_total = team_request.request_user.vacation_days
+
+            days_difference = team_request.end_date - team_request.start_date
+            team_request.total_days = days_difference.days + 1
+            if team_request.processed:
+                if team_request.approved:
+                    team_request.status_label = "Approved"
+                else:
+                    team_request.status_label = "Denied"
+            else:
+                team_request.status_label = "Pending"
+    else:
+        manager_team_requests = []
+
+    admin_profiles_to_process = None
+    if request.user.is_staff:
+        admin_profiles_to_process = 0
+        for profile_record in Profile.objects.all():
+            needs_team = profile_record.team is None
+            needs_employment_date = profile_record.employment_date is None
+            needs_vacation_days = profile_record.vacation_days <= 0
+            if needs_team or needs_employment_date or needs_vacation_days:
+                admin_profiles_to_process += 1
+
     return render(
         request,
-        "myDesk/manage-requests.html",
+        "myDesk/index.html",
         {
-            "team": team,
-            "vacation_requests": vacation_requests,
+            "request_form": RequestForm(user=request.user),
+            "my_requests": my_requests,
+            "user_summary": user_summary,
+            "manager_team_requests": manager_team_requests,
+            "manager_pending_requests": manager_pending_requests,
+            "manager_usage": manager_usage,
+            "admin_profiles_to_process": admin_profiles_to_process,
+            "team": profile.team,
+            "profile": profile,
         },
     )
 
 
 @login_required
-@csrf_exempt
-def approve_request(request, request_id):
-    profile = request.user.profile
-
-    if profile.role != "Manager":
-        return HttpResponseForbidden("Only managers can approve vacation requests.")
-
-    vacation_request = Request.objects.select_related("request_user__user").filter(pk=request_id).first()
-
+def add_request(request):
     if request.method == "POST":
-        form = ManagerDecisionForm(request.POST)
+        form = RequestForm(request.POST, user=request.user)
         if form.is_valid():
-            vacation_request.approved = True
-            vacation_request.processed = True
-            vacation_request.manager_message = form.cleaned_data["manager_message"]
-            vacation_request.save()
-            messages.success(request, "Vacation request approved.")
-            return redirect("manage_requests")
-    else:
-        form = ManagerDecisionForm(
-            initial={"manager_message": vacation_request.manager_message}
-        )
-
-    return render(
-        request,
-        "myDesk/approve-request.html",
-        {
-            "vacation_request": vacation_request,
-            "form": form,
-        },
-    )
+            new_request = form.save(commit=False)
+            new_request.request_user = request.user.profile
+            new_request.approved = False
+            new_request.processed = False
+            new_request.save()
+    return HttpResponseRedirect(reverse("index"))
 
 
 @login_required
 @csrf_exempt
-def deny_request(request, request_id):
+def edit_request(request):
+    data = json.loads(request.body)
+    request_id = data.get("request_id")
+    start_date = data.get("start_date")
+    end_date = data.get("end_date")
+    vacation_request = Request.objects.get(pk=request_id,request_user=request.user.profile,)
+
+
+    form_data = {
+        "start_date": start_date,
+        "end_date": end_date,
+    }
+    form = RequestForm(form_data, instance=vacation_request, user=request.user)
+    if form.is_valid():
+        form.save()
+        return JsonResponse(vacation_request.serialize())
+
+    return JsonResponse({"error": "Invalid data"}, status=400)
+
+
+@login_required
+@csrf_exempt
+def delete_request(request):
+    data = json.loads(request.body)
+    request_id = data.get("request_id")
+    vacation_request = Request.objects.get(pk=request_id,request_user=request.user.profile,)
+    vacation_request.delete()
+    return JsonResponse({"success": True})
+
+
+@login_required
+@csrf_exempt
+def update_request_status(request):
     profile = request.user.profile
-
-    if profile.role != "Manager":
-        return HttpResponseForbidden("Only managers can deny vacation requests.")
-
-    vacation_request = Request.objects.select_related("request_user__user").filter(pk=request_id).first()
-   
-    if request.method == "POST":
-        form = ManagerDecisionForm(request.POST)
-        if form.is_valid():
-            vacation_request.approved = False
-            vacation_request.processed = True
-            vacation_request.manager_message = form.cleaned_data["manager_message"]
-            vacation_request.save()
-            messages.success(request, "Vacation request denied.")
-            return redirect("manage_requests")
+    data = json.loads(request.body)
+    request_id = data.get("request_id")
+    decision = data.get("decision")
+    manager_message = data.get("manager_message", "")
+    vacation_request = Request.objects.get(pk=request_id,request_user__team=profile.team,)
+    vacation_request.manager_message = manager_message
+    vacation_request.processed = True
+    if decision == "approve":
+        vacation_request.approved = True
     else:
-        form = ManagerDecisionForm(
-            initial={"manager_message": vacation_request.manager_message}
-        )
+        vacation_request.approved = False
+    vacation_request.save()
 
-    return render(
-        request,
-        "myDesk/deny-request.html",
-        {
-            "vacation_request": vacation_request,
-            "form": form,
-        },
-    )
+    return JsonResponse(vacation_request.serialize())
