@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django import forms
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 import datetime
 from django.core.exceptions import ValidationError
 import json
@@ -212,18 +213,31 @@ def add_request(request):
             new_request.approved = False
             new_request.processed = False
             new_request.save()
+            messages.success(request, "Request created.")
+        else:
+            for error in form.errors.values():
+                messages.error(request, error)
     return HttpResponseRedirect(reverse("index"))
 
 
 @login_required
 @csrf_exempt
 def edit_request(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=400)
+
     data = json.loads(request.body)
     request_id = data.get("request_id")
     start_date = data.get("start_date")
     end_date = data.get("end_date")
-    vacation_request = Request.objects.get(pk=request_id,request_user=request.user.profile,)
 
+    try:
+        vacation_request = Request.objects.get(
+            pk=request_id,
+            request_user=request.user.profile,
+        )
+    except Request.DoesNotExist:
+        return JsonResponse({"error": "Request not found"}, status=404)
 
     form_data = {
         "start_date": start_date,
@@ -240,9 +254,20 @@ def edit_request(request):
 @login_required
 @csrf_exempt
 def delete_request(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=400)
+
     data = json.loads(request.body)
     request_id = data.get("request_id")
-    vacation_request = Request.objects.get(pk=request_id,request_user=request.user.profile,)
+
+    try:
+        vacation_request = Request.objects.get(
+            pk=request_id,
+            request_user=request.user.profile,
+        )
+    except Request.DoesNotExist:
+        return JsonResponse({"error": "Request not found"}, status=404)
+
     vacation_request.delete()
     return JsonResponse({"success": True})
 
@@ -250,12 +275,29 @@ def delete_request(request):
 @login_required
 @csrf_exempt
 def update_request_status(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=400)
+
     profile = request.user.profile
+    if profile.role != "Manager":
+        return JsonResponse({"error": "Only managers can update requests."}, status=403)
+
+    if not profile.team:
+        return JsonResponse({"error": "You are not assigned to a team."}, status=403)
+
     data = json.loads(request.body)
     request_id = data.get("request_id")
     decision = data.get("decision")
     manager_message = data.get("manager_message", "")
-    vacation_request = Request.objects.get(pk=request_id,request_user__team=profile.team,)
+
+    try:
+        vacation_request = Request.objects.get(
+            pk=request_id,
+            request_user__team=profile.team,
+        )
+    except Request.DoesNotExist:
+        return JsonResponse({"error": "Request not found"}, status=404)
+
     vacation_request.manager_message = manager_message
     vacation_request.processed = True
     if decision == "approve":

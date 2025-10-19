@@ -2,7 +2,7 @@
 
 ## Intro
 
-My capstone project is called "myDesk" and is a tool that allows employees of a company to request vacation days to their managers.
+My capstone project is called "myDesk" and is a tool built with Python and JavaScript that allows employees of a company to request vacation days to their managers.
 The are 3 different user types: **administrator**, **manager** and **employee**. Each one of them has a specific role and can complete unique tasks:
 
 1. Administrators are the ones that build the structure of the app:
@@ -24,7 +24,7 @@ The are 3 different user types: **administrator**, **manager** and **employee**.
 There is no external package needed in order to run the app. The only thing you need to do is of course run `python manage.py makemigration` and `python manage.py migrate`.
 You also need to create a superuser via `python manage.py createsuperuser`. That is your Admin.
 
-After that you can login and navigate to the Admin Dashboard where you will at first create a company record.
+After that please login and navigate to the Admin Dashboard where you will at first create a company record.
 When it's done, you will have the possibility to create Teams. Please create at least one Team.
 
 Now register some new user via the registration form. It would be good to create at least two users as managers and two as normal employees.
@@ -81,3 +81,9 @@ There are 3 apps in this project: _authenticate_, _adminDashboard_ and _myDesk_.
 
 3. _myDesk_ is the main app of the project and is essentially a dashboard where employees see their vacation status and can send a new request.
    It shows how many vacation days has been already used and how many are left. It was challenging to find the right way to calculate days between dates and to implement a verification process to avoid sending bad vacation requests. This request should not start in the past, the end date must be after the start date or at least the same day and finally it should not overlap with other requests already sent by the user. It took some time to research the internet for a good solution but I believe I found the right one.
+
+## Final thoughts
+
+I tried to implement all the topics of the course and I am very happy with the result. However it would be even better if I could have implemented React. Unfortunately the CDN integration is deprecated and I didn't want to risk that, at the time you review my code, the app doesn't work because of that.
+Thank you for making this course available for everyone. I enjoyed it very much and will surely follow another one in the future.
+Greetings from Berlin, Germany. Angelo.

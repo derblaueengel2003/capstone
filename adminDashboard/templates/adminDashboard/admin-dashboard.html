@@ -43,10 +43,10 @@
         {% if teams %} 
         {% for team in teams %}
         <div class="row section">
-            <div class="card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="card-title team_name"><span>{{team.team_name}}</span></h4>
+            <div class="card w-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <h4 class="card-title team_name"><span>{{team.team_name}}</span></h4>
                     <div class="d-flex gap-2">
                         <button type="button" class="btn btn-primary btn-sm edit-team-btn">Edit</button>
                     <form class="delete-team-form">
@@ -57,16 +57,16 @@
                 </div>
                 </div>
                 <div class="edit-team-view" style="display: none;">
-                <div class="card-body border-top">
-                <form class="edit-team-form">
-                    <div class="form-floating">
-                        <input type="text" class="edit-team_name form-control" id="floatingNameTeam" value="{{team.team_name}}" />
-                        <label for="floatingNameTeam">Team</label>
+                    <div class="card-body border-top">
+                        <form class="edit-team-form">
+                            <div class="form-floating">
+                                <input type="text" class="edit-team_name form-control" value="{{team.team_name}}" />
+                                <label>Team</label>
+                            </div>
+                            <input type="text" hidden class="edit-team_id" value="{{team.id}}" />
+                            <input type="submit" class="btn btn-sm btn-primary mt-2" value="Save" />
+                        </form>
                     </div>
-                        <input type="text" hidden class="edit-team_id" value="{{team.id}}" />
-                        <input type="submit" class="btn btn-sm btn-primary mt-2" value="Save" />
-                    </form>
-                </div>
                 </div>
             </div>
             <!-- Employees in that team -->
