@@ -31,7 +31,9 @@ function editRecord(index, section, fields) {
   editForms[index].onsubmit = () => {
     const fieldValues = {};
     fields.forEach((field) => {
-      fieldValues[field] = document.querySelectorAll(`.edit-${field}`)[index].value;
+      fieldValues[field] = document.querySelectorAll(`.edit-${field}`)[
+        index
+      ].value;
     });
 
     fetch(`/edit-${section}`, {
@@ -51,7 +53,9 @@ function editRecord(index, section, fields) {
 
 function deleteRecord(form, section) {
   const fieldsValue = {};
-  fieldsValue[`${section}_id`] = form.querySelector(`.delete-${section}_id`).value;
+  fieldsValue[`${section}_id`] = form.querySelector(
+    `.delete-${section}_id`
+  ).value;
 
   fetch(`/delete-${section}`, {
     method: 'POST',
