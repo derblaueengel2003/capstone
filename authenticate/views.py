@@ -7,8 +7,8 @@ from django import forms
 
 
 class SignUpForm(UserCreationForm):
-    first_name = forms.CharField(max_length=50) # Required
-    last_name = forms.CharField(max_length=50) # Required
+    first_name = forms.CharField(max_length=50)
+    last_name = forms.CharField(max_length=50)
     class Meta:
         model = User
         fields = ("first_name", "last_name", "email", "username", "password1", "password2")

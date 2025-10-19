@@ -117,6 +117,10 @@ def index(request):
             "days_remaining": days_remaining,
         }
 
+    # Admin overview for ht homepage. Show if there is tasks to complete
+    # in the Admin Dashboard. This is the case if a user just registered
+    # and is not assigned to a team or is missing some details such as 
+    # annual vacation days and employment start date
     if request.user.is_staff:
         admin_profiles_to_process = 0
         for profile_record in Profile.objects.all():
@@ -257,24 +261,32 @@ def manage_request(request):
             .select_related("request_user__user")
             .order_by("start_date", "end_date")
         )
-        profile_ids = list(
-            team_requests_qs.values_list("request_user_id", flat=True).distinct()
-        )
-        member_profiles = Profile.objects.filter(id__in=profile_ids)
+        team_requests = []
+        profile_ids = []
+        for team_request in team_requests_qs:
+            team_requests.append(team_request)
+            profile_id = team_request.request_user_id
+            if profile_id not in profile_ids:
+                profile_ids.append(profile_id)
 
-        usage_lookup = {}
+        member_profiles = []
+        for profile_id in profile_ids:
+            member = Profile.objects.get(id=profile_id)
+            member_profiles.append(member)
+
+        vacation_usage = {}
         for member in member_profiles:
             year, used_days, remaining_days = get_vacation_usage(member)
-            usage_lookup[member.id] = {
+            vacation_usage[member.id] = {
                 "year": year,
                 "used": used_days,
                 "remaining": remaining_days,
                 "total": member.vacation_days,
             }
 
-        vacation_requests = list(team_requests_qs)
+        vacation_requests = team_requests
         for vacation in vacation_requests:
-            usage = usage_lookup.get(vacation.request_user_id)
+            usage = vacation_usage.get(vacation.request_user_id)
             if usage:
                 vacation.usage_year = usage["year"]
                 vacation.usage_days_used = usage["used"]
@@ -298,15 +310,7 @@ def approve_request(request, request_id):
     if profile.role != "Manager":
         return HttpResponseForbidden("Only managers can approve vacation requests.")
 
-    vacation_request = Request.objects.select_related(
-        "request_user__team",
-        "request_user__user"
-    ).filter(pk=request_id).first()
-    if not vacation_request:
-        return HttpResponseForbidden("The vacation request you are looking for does not exist.")
-
-    if vacation_request.request_user.team != profile.team:
-        return HttpResponseForbidden("You can only approve requests from your team.")
+    vacation_request = Request.objects.select_related("request_user__user").filter(pk=request_id).first()
 
     if request.method == "POST":
         form = ManagerDecisionForm(request.POST)
@@ -340,16 +344,8 @@ def deny_request(request, request_id):
     if profile.role != "Manager":
         return HttpResponseForbidden("Only managers can deny vacation requests.")
 
-    vacation_request = Request.objects.select_related(
-        "request_user__team",
-        "request_user__user"
-    ).filter(pk=request_id).first()
-    if not vacation_request:
-        return HttpResponseForbidden("The vacation request you are looking for does not exist.")
-
-    if vacation_request.request_user.team != profile.team:
-        return HttpResponseForbidden("You can only deny requests from your team.")
-
+    vacation_request = Request.objects.select_related("request_user__user").filter(pk=request_id).first()
+   
     if request.method == "POST":
         form = ManagerDecisionForm(request.POST)
         if form.is_valid():

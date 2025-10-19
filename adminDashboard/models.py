@@ -48,6 +48,8 @@ class Profile(models.Model):
             "vacation_days": self.vacation_days,
             }  
 
+# if User is created or updated then the associate Profile should be
+# created or updated too.
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:

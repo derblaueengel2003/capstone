@@ -5,7 +5,7 @@
 
 <div class="row section">
     <h2 class="mb-4">{{ user.get_full_name }}{% if team %} — {{ team.team_name }}{% endif %}</h2>
-
+<!-- Manager can only see vacation requests of their Team -->
     {% if not team %}
         <p>You are not assigned to a team yet, so there are no vacation requests to review.</p>
     {% else %}
@@ -13,9 +13,10 @@
             <h4>Team vacation requests</h4>
             <ul class="list-group">
                 {% for vacation in vacation_requests %}
-                    <li class="list-group-item m-2 vacation_request border rounded {% if not vacation.processed %}bg-secondary-subtle{% elif vacation.approved %}bg-success-subtle{% else %}bg-danger-subtle{% endif %}">
+                <!-- Set a background color to highlight if the request is pending, approved or denied -->
+                    <li class="list-group-item m-2 border rounded {% if not vacation.processed %}bg-secondary-subtle{% elif vacation.approved %}bg-success-subtle{% else %}bg-danger-subtle{% endif %}">
                         <div class="row p-2">
-                            <div class="col-3"><span>Employee: {{ vacation.request_user.user.get_full_name|default:vacation.request_user.user.username }}</span></div>
+                            <div class="col-3"><span>Employee: {{ vacation.request_user.user.get_full_name}}</span></div>
                             <div class="col-2 start_date"><span>Start: {{ vacation.start_date }}</span></div>
                             <div class="col-2 end_date"><span>End: {{ vacation.end_date }}</span></div>
                             <div class="col-2 approved">
@@ -30,6 +31,8 @@
                                 </span>
                             </div>
                             <div class="col-3">
+                                <!-- For pending requests let's show how many vacation days the employee has left
+                                 so the manager can take a better decision -->
                                 {% if not vacation.processed %}
                                     {% if vacation.usage_days_remaining is not None %}
                                         <div>Days left ({{ vacation.usage_year }}): {{ vacation.usage_days_remaining }}</div>

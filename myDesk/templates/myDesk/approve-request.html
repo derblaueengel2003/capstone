@@ -3,8 +3,8 @@
 {% block body %}
 <div class="row section">
     <h2>Approve vacation request</h2>
-    <div class="p-3 mb-3 vacation_request border rounded {% if not vacation_request.processed %}bg-secondary-subtle{% elif vacation_request.approved %}bg-success-subtle{% else %}bg-danger-subtle{% endif %}">
-        <p>Employee: {{ vacation_request.request_user.user.get_full_name|default:vacation_request.request_user.user.username }}</p>
+    <div class="p-3 mb-3">
+        <p>Employee: {{ vacation_request.request_user.user.get_full_name }}</p>
         <p>Start: {{ vacation_request.start_date }} — End: {{ vacation_request.end_date }}</p>
         {% if vacation_request.manager_message %}
             <p>Existing message: {{ vacation_request.manager_message }}</p>

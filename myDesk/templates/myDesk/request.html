@@ -17,10 +17,10 @@
 
 {% else %}
 <h4>Your requests:</h4>
-
+<!-- Each request has a different background color depending on the Status -->
  <ul class="list-group">
     {% for vacation in vacation_requests %}
-        <li class="list-group-item m-2 vacation_request border rounded {% if not vacation.processed %}bg-secondary-subtle{% elif vacation.approved %}bg-success-subtle{% else %}bg-danger-subtle{% endif %}">
+        <li class="list-group-item m-2 border rounded {% if not vacation.processed %}bg-secondary-subtle{% elif vacation.approved %}bg-success-subtle{% else %}bg-danger-subtle{% endif %}">
         <div class="row p-2">
         <div class="col-2 start_date"><span>Start date: {{vacation.start_date}}</span></div>
         <div class="col-2 end_date"><span>End date: {{vacation.end_date}}</span></div>
@@ -38,6 +38,7 @@
             <span>Message: {{ vacation.manager_message }}</span>
           {% endif %}
         </div>
+        <!-- The employee can edit or cancel the request until it's processed by the Manager -->
         {% if not vacation.processed %}
             <div class="col-1">
                 <a href="{% url 'edit_request' vacation.id%}">

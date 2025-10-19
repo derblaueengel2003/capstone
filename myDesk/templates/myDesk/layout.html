@@ -11,6 +11,10 @@
     <body>
        <div class="container">
 
+        <!-- The navbar is shown according to the Role
+         only Admin can see the admin dashboard
+         only Managers can approve vacation requests but they don't need to use this tool for
+         making request for themselves, so the Vacation Request page is not necessary -->
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <a class="navbar-brand" href="{% url 'index' %}">myDesk</a>
             <div>
