@@ -123,11 +123,9 @@ function setDecisionForms() {
       fetch('/update-request-status', {
         method: 'POST',
         body: JSON.stringify(payload),
-      })
-        .then((response) => response.json())
-        .then(() => {
-          window.location.reload();
-        });
+      }).then((response) => {
+        window.location.reload();
+      });
     });
   });
 }

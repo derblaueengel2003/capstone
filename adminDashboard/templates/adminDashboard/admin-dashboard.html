@@ -42,40 +42,116 @@
         <h3>Teams</h3>
         {% if teams %} 
         {% for team in teams %}
-        <div class="col section">  
-            <div class="card text-bg-light" style="width: 18rem;">
-                <div class="card-body">
-                <h4 class="card-title team_name"><span>{{team.team_name}}</span></h4>    
-                <div class="row">
-                    <div class="col">
-                        <button type="button" class="btn btn-primary btn-sm edit-team-btn">Edit</button> 
-                    </div>            
-                <!-- Delete team record -->
-                    <div class="col">
-                        <form class="delete-team-form">
-                            <input type="text" hidden class="delete-team_id" value="{{team.id}}" />
-                            <input type="submit" class="btn btn-danger btn-sm delete-team-btn" value="Delete">
-                        </form>  
-                    </div> 
-                </div>         
-            </div>
-                    <!-- Edit team infos -->
-                    <div class="edit-team-view" style="display: none;">
-
-                        <div class="card-body">
-                        <form class="edit-team-form">
-                                <div class="form-floating">
-                                    <input type="text" class="edit-team_name form-control" id="floatingNameTeam" value="{{team.team_name}}" />
-                                    <label for="floatingNameTeam">Team</label>
-                                </div>
-                                <input type="text" hidden class="edit-team_id" value="{{team.id}}" />
-                                <input type="submit" class="btn btn-sm btn-primary" value="Save" />
-                            </form>
-                        </div>
+        <div class="row section">
+            <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="card-title team_name"><span>{{team.team_name}}</span></h4>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-primary btn-sm edit-team-btn">Edit</button>
+                    <form class="delete-team-form">
+                        <input type="text" hidden class="delete-team_id" value="{{team.id}}" />
+                        <input type="submit" class="btn btn-danger btn-sm delete-team-btn" value="Delete">
+                    </form>
                     </div>
-                    
-                </div>   
+                </div>
+                </div>
+                <div class="edit-team-view" style="display: none;">
+                <div class="card-body border-top">
+                <form class="edit-team-form">
+                    <div class="form-floating">
+                        <input type="text" class="edit-team_name form-control" id="floatingNameTeam" value="{{team.team_name}}" />
+                        <label for="floatingNameTeam">Team</label>
+                    </div>
+                        <input type="text" hidden class="edit-team_id" value="{{team.id}}" />
+                        <input type="submit" class="btn btn-sm btn-primary mt-2" value="Save" />
+                    </form>
+                </div>
+                </div>
             </div>
+            <!-- Employees in that team -->
+        {% if employees %}
+        {% for employee in employees %}
+        {% if employee.user.is_active and employee.team.id == team.id %}
+        <div class="col section mb-3">
+        <div class="card text-bg-light">
+            <div class="card-body">
+                <div class="card-title firstname"><span>{{employee.user.get_full_name}}</span></div>
+        <p class="mb-1">Username: <strong>{{ employee.user.username }}</strong></p>
+        <p class="mb-1">Full name: <strong>{{ employee.user.get_full_name }}</strong></p>
+        <p class="mb-1">Team: <strong>{% if employee.team %}{{ employee.team.team_name }}{% else %}Not assigned{% endif %}</strong></p>
+        <p class="mb-1">Role: <strong>{{ employee.role }}</strong></p>
+        <p class="mb-1">Employment date: <strong>{{ employee.employment_date }}</strong></p>
+        <p class="mb-0">Annual vacation days: <strong>{{ employee.vacation_days }}</strong></p> <div class="row">
+                <div class="col">
+                    <button type="button" class="col btn btn-primary btn-sm mt-2 edit-employee-btn">Edit</button>
+                </div>
+                <!-- Toggle is_active property of this user -->
+                 {% if employee.user.id != user.id%}
+                <div class="col">
+                    <form class="col delete-employee-form">
+                        <input type="text" hidden class="delete-employee_id" value="{{employee.user.id}}" />
+                        <input type="submit" class="btn btn-danger btn-sm mt-2 delete-employee-btn" value="Deactivate">
+                    </form>
+                </div>  
+                {% endif %}
+                </div>  
+            </div> 
+            <!-- Edit employee infos -->
+            <div class="row g-2 edit-employee-view" style="display: none;">
+                <form class="edit-employee-form" id="floatingSelectTeam">
+                    <div class="card-body">
+                        <div class="form-floating">
+                        <select class="form-select edit-team">
+                            {% if not employee.team.id %}
+                            <option value="" selected>--Team not assigned--</option>
+                            {% else %}
+                            <option value="remove">--Remove from Team--</option>
+                            {% endif %}
+                                {% for team in teams %}
+                                {% if team.id == employee.team.id %}
+                                <option value= "{{ team.id }}" selected>{{ team.team_name }}</option>
+                                {% else %}
+                                <option value= "{{ team.id }}">{{ team.team_name }}</option>
+                                {% endif %}
+                                {% endfor %}
+                        </select>
+                        <label for="floatingSelectTeam">Team</label>
+                        </div>
+                    <!-- End Edit team infos -->
+
+                        <div class="form-floating">
+                        <select class="form-select edit-role" id="floatingSelectRole">
+            
+                                {% for role in employee.ROLES.keys %}
+                                {% if role == employee.role %}
+                                <option value= "{{ role }}" selected>{{ role }}</option>
+                                {% else %}
+                                <option value= "{{ role }}">{{ role }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                            <label for="floatingSelectRole">Role</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="date" class="edit-employment_date form-control" id="floatingemploymentDate" value="{{employee.employment_date|date:'Y-m-d'}}" />
+                            <label for="floatingemploymentDate">Employment Date</label>
+                        </div>
+                        <div class="form-floating">
+                            <input type="number" class="edit-vacation_days form-control" id="floatingVacationDays" value="{{employee.vacation_days}}" />
+                            <label for="floatingVacationDays">Annual Vacation Days</label>
+                        </div>
+                        <input type="text" hidden class="edit-employee_id" value="{{employee.id}}" />
+                        <input type="submit" class="btn btn-sm mt-2 btn-primary" value="Save" />
+                    </div>
+                    </form>
+                </div>
+            </div>
+            </div>
+                    {% endif %}
+                    {% endfor %}
+                    {% endif %}
+                    <hr>
             {% endfor %}
         {% endif %}
     </div>
@@ -96,12 +172,12 @@
 
 
 <!-- MANAGE EMPLOYEE SECTION -->
- <!-- Active users -->
+ <!-- Active users with no team assigned -->
      <div class="row section employee">
-        <h3>Employees</h3>
-        {% if employees %}
+         <h3>New Employees</h3>
+         {% if employees %}
         {% for employee in employees %}
-        {% if employee.user.is_active %}
+        {% if employee.user.is_active and not employee.team.id %}
         <div class="col section">
         <div class="card text-bg-light" style="width: 18rem;">
             <div class="card-body">
