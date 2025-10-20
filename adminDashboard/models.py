@@ -30,7 +30,7 @@ class Profile(models.Model):
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, related_name="team_members", null=True, blank=True)
     role = models.CharField(choices=ROLES, default='Employee', max_length=16)
     employment_date = models.DateField(null=True, blank=True)
-    vacation_days = models.IntegerField(default=0)  
+    vacation_days = models.IntegerField(default=20)  
     
     def __str__(self):
         return self.user.username
