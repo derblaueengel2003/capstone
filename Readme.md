@@ -24,7 +24,7 @@ The are 3 different user types: **administrator**, **manager** and **employee**.
 There is no external package needed in order to run the app. The only thing you need to do is of course run `python manage.py makemigration` and `python manage.py migrate`.
 You also need to create a superuser via `python manage.py createsuperuser`. That is your Admin.
 
-After that please login and navigate to the Admin Dashboard where you will at first create a company record.
+After that please start the server and login to the app. Please use the Chrome browser! Navigate to the Admin Dashboard where you will at first create a company record.
 When it's done, you will have the possibility to create Teams. Please create at least one Team.
 
 Now register some new user via the registration form. It would be good to create at least two users as managers and two as normal employees.
@@ -71,7 +71,7 @@ I had to find a way to keep track of the current user role in order to show or h
 
 There are 3 apps in this project: _authenticate_, _adminDashboard_ and _myDesk_.
 
-1. _authenticate_ is the app responsible for the registration of new users and login/logout. When a new user registers, a new profile is created and linked uniquely to that user. This way additional information about the employee (team assigned, employment start date etc) will be stored separately in the profile leaving the registration information untouched.
+1. _authenticate_ is the app responsible for the registration of new users and login/logout. When a new user registers, a new profile is created and linked uniquely to that user. This way additional information about the employee (team assigned, employment start date etc) will be stored separately in the profile leaving the registration information untouched. I used here the standard Django authentication and made firstname and lastname mandatory.
    Each user has a profile page where they can edit their information. This page uses only server-side python code whith no javascript.
 
 2. _adminDashboard_ was created to keep the administrative tasks separate from the rest. This way it should be easier to add new features in the future or maintain the code without impacting the main app.
