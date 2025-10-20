@@ -28,7 +28,7 @@ class Profile(models.Model):
     ROLES = {'Admin': 'Admin', 'Manager': 'Manager', 'Employee': 'Employee'}
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, related_name="team_members", null=True, blank=True)
-    role = models.CharField(choices=ROLES, default='Employee')
+    role = models.CharField(choices=ROLES, default='Employee', max_length=16)
     employment_date = models.DateField(null=True, blank=True)
     vacation_days = models.IntegerField(default=0)  
     

@@ -21,7 +21,10 @@ The are 3 different user types: **administrator**, **manager** and **employee**.
 
 ## Setup
 
-There is no external package needed in order to run the app. The only thing you need to do is of course run `python manage.py makemigration` and `python manage.py migrate`.
+Run these commands:
+`pip install -r requirements.txt` 
+`python manage.py makemigrations`
+`python manage.py migrate`.
 You also need to create a superuser via `python manage.py createsuperuser`. That is your Admin.
 
 After that please start the server and login to the app. Please use the Chrome browser! Navigate to the Admin Dashboard where you will at first create a company record.
