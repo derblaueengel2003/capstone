@@ -22,7 +22,7 @@ The are 3 different user types: **administrator**, **manager** and **employee**.
 ## Setup
 
 Run these commands:
-`pip install -r requirements.txt` 
+`pip install -r capstone/requirements.txt` 
 `python manage.py makemigrations`
 `python manage.py migrate`.
 You also need to create a superuser via `python manage.py createsuperuser`. That is your Admin.
