@@ -1,9 +1,192 @@
 {% extends "myDesk/layout.html" %}
+{% load static %}
 
 {% block body %}
 
-    <h2>Welcome</h2>
+<div class="row section">
+    <h2 class="mb-4">Welcome {{ user.get_full_name }}</h2>
+    <div class="col section">
+        <div class="card text-bg-light">
+            <div class="card-body">
+                <h4 class="card-title">Profile</h4>
+                <p class="mb-1">Username: <strong>{{ user.username }}</strong></p>
+                <p class="mb-1">Full name: <strong>{{ user.get_full_name }}</strong></p>
+                <p class="mb-1">Team: <strong>{% if profile.team %}{{ profile.team.team_name }}{% else %}Not assigned{% endif %}</strong></p>
+                <p class="mb-1">Role: <strong>{{ profile.role }}</strong></p>
+                <p class="mb-1">Employment date: <strong>{{ profile.employment_date }}</strong></p>
+                <p class="mb-0">Annual vacation days: <strong>{{ profile.vacation_days }}</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
 
+<div class="row section">
+    {% if profile.role != "Manager" %}
+    <div class="col section">
+        <div class="card border-primary">
+            <div class="card-body">
+                <h4 class="card-title">Your vacation summary</h4>
+                <p class="mb-1">Year: <strong>{{ user_summary.year }}</strong></p>
+                <p class="mb-1">Total requests: <strong>{{ user_summary.total }}</strong></p>
+                <p class="mb-1">Pending: <strong>{{ user_summary.pending }}</strong></p>
+                <p class="mb-1">Approved: <strong>{{ user_summary.approved }}</strong></p>
+                <p class="mb-1">Denied: <strong>{{ user_summary.denied }}</strong></p>
+                <p class="mb-1">Vacation days available: <strong>{{ user_summary.vacation_days }}</strong></p>
+                <p class="mb-1">Days used: <strong>{{ user_summary.days_used }}</strong></p>
+                <p class="mb-0">Days remaining: <strong>{{ user_summary.days_remaining }}</strong></p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if admin_profiles_to_process %}
+    <div class="col section">
+        <div class="card border-warning">
+            <div class="card-body">
+                <h4 class="card-title">New users to onboard</h4>
+                <p class="mb-0">Profiles needing attention: <strong>{{ admin_profiles_to_process }}</strong></p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if profile.role == "Manager" and manager_pending_requests %}
+    <div class="col section">
+        <div class="card border-info">
+            <div class="card-body">
+                <h4 class="card-title">Team requests pending</h4>
+                <p class="mb-0">Requests waiting for review: <strong>{{ manager_pending_requests }}</strong></p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
 
+<hr>
+
+<!-- My Requests Section -->
+{% if profile.role != "Manager" %}
+<div class="row section">
+    <h3>Your Vacation Requests</h3>
+
+    {% if my_requests %}
+        {% for vacation_request in my_requests %}
+        <div class="col section mb-3">
+            <div class="card text-bg-light" style="width: 22rem;">
+                <div class="card-body">
+                    <div class="card-title">From <strong>{{ vacation_request.start_date }}</strong> to <strong>{{ vacation_request.end_date }}</strong></div>
+                    <p class="mb-1">Total days: <strong>{{ vacation_request.total_days }}</strong></p>
+                    <p class="mb-1">Status: <strong>{{ vacation_request.status_label }}</strong></p>
+                    {% if vacation_request.manager_message %}
+                    <p class="mb-1">Manager note: <em>{{ vacation_request.manager_message }}</em></p>
+                    {% endif %}
+                    <div class="d-flex gap-2 flex-wrap mt-2">
+                        {% if not vacation_request.processed %}
+                        <button type="button" class="btn btn-primary btn-sm edit-request-btn">Edit</button>
+                        {% endif %}
+                        {% if vacation_request.status_label != "Approved"%}
+                        <form class="delete-request-form">
+                            <input type="text" hidden class="delete-request_id" value="{{ vacation_request.id }}">
+                            <input type="submit" class="btn btn-danger btn-sm" value="Delete">
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if not vacation_request.processed %}
+                <div class="edit-request-view" style="display: none;">
+                    <div class="card-body border-top">
+                        <form class="edit-request-form">
+                            <div class="form-floating mb-2">
+                                <input type="date" class="form-control edit-start_date" value="{{ vacation_request.start_date|date:'Y-m-d' }}">
+                                <label>Start date</label>
+                            </div>
+                            <div class="form-floating mb-2">
+                                <input type="date" class="form-control edit-end_date" value="{{ vacation_request.end_date|date:'Y-m-d' }}">
+                                <label>End date</label>
+                            </div>
+                            <input type="text" hidden class="edit-request_id" value="{{ vacation_request.id }}">
+                            <input type="submit" class="btn btn-sm btn-primary" value="Save">
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col section">
+            <div class="card text-bg-light" style="width: 22rem;">
+                <div class="card-body">
+                    <p class="mb-0">You have no vacation requests yet.</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    <hr>
+        <div class="card section" style="width: 22rem;">
+            <div class="card-body">
+                <h4 class="card-title">Add a new request</h4>
+                <form action="{% url 'add_request' %}" method="post">
+                    {% csrf_token %}
+                    {{ request_form }}
+                    <input class="btn btn-primary mt-2" type="submit" value="Add Request">
+                </form>
+            </div>
+        </div>
+</div>
+
+<hr>
+{% endif %}
+<!-- Team Requests Section -->
+{% if profile.role == "Manager" %}
+    {% if manager_team_requests %}
+<div class="row section">
+    <h3>Team Requests</h3>
+    {% for vacation_request in manager_team_requests %}
+    <div class="col section">
+        <div class="card text-bg-light" style="width: 24rem;">
+            <div class="card-body">
+                <div class="card-title">
+                    <strong>{{ vacation_request.request_user.user.get_full_name }}</strong>
+                    <span class="text-muted d-block">({{ vacation_request.request_user.user.username }})</span>
+                </div>
+                <p class="mb-1">Dates: <strong>{{ vacation_request.start_date }}</strong> to <strong>{{ vacation_request.end_date }}</strong></p>
+                <p class="mb-1">Total days: <strong>{{ vacation_request.total_days }}</strong></p>
+                <p class="mb-1">Status: <strong>{{ vacation_request.status_label }}</strong></p>
+                {% if vacation_request.manager_message %}
+                <p class="mb-1">Last message: <em>{{ vacation_request.manager_message }}</em></p>
+                {% endif %}
+                <p class="mb-1">Usage for {{ vacation_request.usage_year }}: <strong>{{ vacation_request.usage_used }}</strong> used / <strong>{{ vacation_request.usage_remaining }}</strong> remaining (total {{ vacation_request.usage_total }})</p>
+                {% if not vacation_request.processed %}
+                <div class="decision-request-view mt-3">
+                    <form class="decision-request-form">
+                        <input type="text" hidden class="decision-request_id" value="{{ vacation_request.id }}">
+                        <input type="hidden" class="decision-action" value="approve">
+                        <div class="form-floating">
+                            <textarea class="form-control decision-message" placeholder="Message for the employee" style="height: 100px;"></textarea>
+                            <label>Message for the employee</label>
+                        </div>
+                        <div class="d-flex gap-2 mt-2">
+                            <button type="submit" class="btn btn-success btn-sm decision-btn" data-decision="approve">Approve</button>
+                            <button type="submit" class="btn btn-danger btn-sm decision-btn" data-decision="deny">Deny</button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+    {% elif team %}
+<div class="row section">
+    <div class="col section">
+        <div class="card text-bg-light" style="width: 24rem;">
+            <div class="card-body">
+                <p class="mb-0">Your team has no vacation requests yet.</p>
+            </div>
+        </div>
+    </div>
+</div>
+    {% endif %}
+{% endif %}
 
 {% endblock %}

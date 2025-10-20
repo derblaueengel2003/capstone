@@ -7,8 +7,8 @@ from django import forms
 
 
 class SignUpForm(UserCreationForm):
-    first_name = forms.CharField(max_length=50) # Required
-    last_name = forms.CharField(max_length=50) # Required
+    first_name = forms.CharField(max_length=50)
+    last_name = forms.CharField(max_length=50)
     class Meta:
         model = User
         fields = ("first_name", "last_name", "email", "username", "password1", "password2")
@@ -64,19 +64,14 @@ def register_user(request):
 def edit_user(request):
     if request.method == 'POST':
         user_form = UserForm(request.POST, instance=request.user)
-        # profile_form = ProfileForm(request.POST, instance=request.user.profile)
-        # if user_form.is_valid() and profile_form.is_valid():
         if user_form.is_valid():
             user_form.save()
-            # profile_form.save()
             messages.success(request, ('Your profile was successfully updated!'))
             
         else:
             messages.error(request, ('Please correct the error below.'))
     else:
         user_form = UserForm(instance=request.user)
-        # profile_form = ProfileForm(instance=request.user.profile)
     return render(request, 'authenticate/profile.html', {
         'user_form': user_form,
-        # 'profile_form': profile_form
     })

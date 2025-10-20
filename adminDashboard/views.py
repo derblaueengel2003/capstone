@@ -7,6 +7,7 @@ from django import forms
 from django.views.decorators.csrf import csrf_exempt
 import json
 
+# Forms with css class associated
 class CompanyForm(forms.ModelForm):
     class Meta:
         model = Company
@@ -29,11 +30,11 @@ class ProfileForm(forms.ModelForm):
         fields = ["user", "team", "role", "employment_date", "vacation_days", "id"]
 
 
-@login_required()
+@login_required
 def admin_dashboard(request):
     companies = Company.objects.all().order_by('company_name').values()
     teams = Team.objects.all().order_by('team_name').values()
-    employees = Profile.objects.all().order_by('role')
+    employees = Profile.objects.all().order_by('team')
 
 
     #If the user has is_staff permission then he can access the admin
@@ -110,6 +111,7 @@ def edit_employee(request):
     print(request.body)
     employee = Profile.objects.get(pk=data['employee_id'])
 
+# check if the form gives me a team name and this name is not "remove"
     if data['team'] and data['team'] != 'remove':
         employee.team = Team.objects.get(pk=data['team'])
     elif data['team'] == 'remove':

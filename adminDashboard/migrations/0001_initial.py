@@ -65,6 +65,7 @@ class Migration(migrations.Migration):
                             ("Employee", "Employee"),
                         ],
                         default="Employee",
+                        max_length=16
                     ),
                 ),
                 ("employment_date", models.DateField(blank=True, null=True)),
