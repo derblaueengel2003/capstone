@@ -11,7 +11,22 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-
+import os
+DEBUG = False
+SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
+ALLOWED_HOSTS = [
+    "capstone.arboscello.com",
+    "101.204.148.37.host.secureserver.net",
+    "37.148.204.101",
+]
+CSRF_TRUSTED_ORIGINS = [
+    "https://capstone.arboscello.com",
+    "http://capstone.arboscello.com",
+    "https://101.204.148.37.host.secureserver.net",
+    "http://101.204.148.37.host.secureserver.net",
+    "https://37.148.204.101",
+    "http://37.148.204.101",
+]
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,12 +35,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-4wkev_)79bj=-mpdom5&6zp!bnoe2l8@q48n^wv1aq^8x65g22"
+# SECRET_KEY = "django-insecure-4wkev_)79bj=-mpdom5&6zp!bnoe2l8@q48n^wv1aq^8x65g22"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -119,6 +134,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
